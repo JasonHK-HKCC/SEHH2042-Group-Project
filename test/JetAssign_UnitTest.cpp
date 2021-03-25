@@ -4,7 +4,10 @@
 
 namespace
 {
+    using std::make_tuple;
+
     namespace Matchers = Catch::Matchers;
+    namespace Generators = Catch::Generators;
 
     TEST_CASE("stringutil::to_uppercase")
     {
@@ -145,35 +148,76 @@ namespace
 
         WHEN("the input was a string that contains a passenger's name")
         {
-            string passenger_name;
-            REQUIRE(parse_passenger_name("Chan Tai Man", passenger_name));
-            REQUIRE(passenger_name == "Chan Tai Man");
+            string test_input;
+            string expected_passenger_name;
+
+            std::tie(test_input, expected_passenger_name) = GENERATE(
+                Generators::table<string, string>(
+                    {
+                        make_tuple("Chan Tai Man", "Chan Tai Man"),
+                        make_tuple("foo bar", "foo bar"),
+                    }));
+
+            {
+                string passenger_name;
+                REQUIRE(parse_passenger_name("Chan Tai Man", passenger_name));
+                REQUIRE(passenger_name == "Chan Tai Man");
+            }
         }
     }
 
     TEST_CASE("jetassign::parse_passport_id")
     {
         using jetassign::parse_passport_id;
-
-        WHEN("the input was an empty string")
-        {
-            string passport_id;
-            REQUIRE_FALSE(parse_passport_id("", passport_id));
-            REQUIRE(passport_id == "");
-        }
-
+        
         WHEN("the input was not a valid passport ID")
         {
-            string passport_id;
-            REQUIRE_FALSE(parse_passport_id("Tiro Finale", passport_id));
-            REQUIRE(passport_id == "");
+            string test_input = GENERATE(
+                "",
+                u"／人◕ ‿‿ ◕人＼");
+
+            {
+                string passport_id;
+                
+                THEN("should return false")
+                {
+                    REQUIRE_FALSE(parse_passport_id(test_input, passport_id));
+
+                    AND_THEN("passport_id should not be altered")
+                    {
+                        REQUIRE(passport_id.empty());
+                    }
+                }
+            }
         }
 
         WHEN("the input was a valid passport ID")
         {
-            string passport_id;
-            REQUIRE(parse_passport_id("HK12345678A", passport_id));
-            REQUIRE(passport_id == "HK12345678A");
+            string test_input;
+            string expected_passport_id;
+
+            std::tie(test_input, expected_passport_id) = GENERATE(
+                Generators::table<string, string>(
+                    {
+                        make_tuple("ABC", "ABC"),
+                        make_tuple("123", "123"),
+                        make_tuple("ABC123", "ABC123"),
+                        make_tuple("123ABC", "123ABC"),
+                    }));
+
+            {
+                string passport_id;
+                
+                THEN("should return true")
+                {
+                    REQUIRE(parse_passport_id(test_input, passport_id));
+
+                    AND_THEN("passport_id should be updated with the parsed passport ID")
+                    {
+                        REQUIRE(passport_id == expected_passport_id);
+                    }
+                }
+            }
         }
     }
 
@@ -194,6 +238,34 @@ namespace
             REQUIRE(parse_seat_location("1A", row, column));
             REQUIRE(row == 0);
             REQUIRE(column == 0);
+        }
+    }
+
+    TEST_CASE("jetassign::parse_compact_assignment")
+    {
+        using jetassign::SeatLocation;
+        using jetassign::parse_compact_assignment;
+
+        GIVEN("the input format was not correct")
+        {
+            #define MACRO_WHEN(desc, input) \
+                WHEN(desc) \
+                { \
+                    string       passenger_name; \
+                    string       passport_id; \
+                    SeatLocation seat_location; \
+                    \
+                    THEN("it should return false") \
+                    { \
+                        REQUIRE_FALSE(parse_compact_assignment(input, passenger_name, passport_id, seat_location)); \
+                    } \
+                }
+
+            MACRO_WHEN("the number of input segments was not 3", "")
+            MACRO_WHEN("the number of input segments was not 3", "/")
+            MACRO_WHEN("the number of input segments was not 3", "///")
+
+            #undef MACRO_WHEN
         }
     }
 
