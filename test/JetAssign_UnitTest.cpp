@@ -2,6 +2,8 @@
 
 #include "JetAssign.cpp"
 
+using Catch::Matchers::Equals;
+
 TEST_CASE("stringutil::to_uppercase")
 {
     using stringutil::to_uppercase;
@@ -32,34 +34,69 @@ TEST_CASE("stringutil::split")
 {
     using stringutil::split;
 
+    GIVEN("the separator is an empty string")
     {
-        vector<string> segments = split("", ",");
-        REQUIRE(segments.size() == 1);
-        REQUIRE(segments.at(0) == "");
+        const string kSeparator = "";
+
+        AND_WHEN("the input is an empty string")
+        {
+            REQUIRE_THAT(split("", kSeparator), Equals(vector<string> { "" }));
+        }
+
+        AND_WHEN("the input is a string that doesn't contain any separators")
+        {
+            REQUIRE_THAT(split("a", kSeparator), Equals(vector<string> { "a" }));
+        }
     }
 
+    GIVEN("the separator is a single-character string")
     {
-        vector<string> segments = split("a,b,c", ",");
-        REQUIRE(segments.size() == 3);
-        REQUIRE(segments.at(0) == "a");
-        REQUIRE(segments.at(1) == "b");
-        REQUIRE(segments.at(2) == "c");
+        const string kSeparator = ",";
+
+        AND_WHEN("the input is an empty string")
+        {
+            REQUIRE_THAT(split("", kSeparator), Equals(vector<string> { "" }));
+        }
+
+        AND_WHEN("the input is a string that doesn't contain any separators")
+        {
+            REQUIRE_THAT(split("a", kSeparator), Equals(vector<string> { "a" }));
+        }
+
+        AND_WHEN("the input is a string that contains separators only")
+        {
+            REQUIRE_THAT(split(",,", kSeparator), Equals(vector<string> { "", "", "" }));
+        }
+
+        AND_WHEN("the input is a string that contains separators and other characters")
+        {
+            REQUIRE_THAT(split("a,b,c", kSeparator), Equals(vector<string> { "a", "b", "c" }));
+        }
     }
 
+    GIVEN("the separator is a multi-character string")
     {
-        vector<string> segments = split("a->b->c", "->");
-        REQUIRE(segments.size() == 3);
-        REQUIRE(segments.at(0) == "a");
-        REQUIRE(segments.at(1) == "b");
-        REQUIRE(segments.at(2) == "c");
-    }
+        const string kSeparator = "->";
 
-    {
-        vector<string> segments = split(",,", ",");
-        REQUIRE(segments.size() == 3);
-        REQUIRE(segments.at(0) == "");
-        REQUIRE(segments.at(1) == "");
-        REQUIRE(segments.at(2) == "");
+        AND_WHEN("the input is an empty string")
+        {
+            REQUIRE_THAT(split("", kSeparator), Equals(vector<string> { "" }));
+        }
+
+        AND_WHEN("the input is a string that doesn't contain any separators")
+        {
+            REQUIRE_THAT(split("a", kSeparator), Equals(vector<string> { "a" }));
+        }
+
+        AND_WHEN("the input is a string that contains separators only")
+        {
+            REQUIRE_THAT(split("->->", kSeparator), Equals(vector<string> { "", "", "" }));
+        }
+
+        AND_WHEN("the input is a string that contains separators and other characters")
+        {
+            REQUIRE_THAT(split("a->b->c", kSeparator), Equals(vector<string> { "a", "b", "c" }));
+        }
     }
 }
 
@@ -131,11 +168,3 @@ TEST_CASE("jetassign::SeatLocation::to_string")
     SeatLocation location { 9, 3 };
     REQUIRE(location.to_string() == "10D");
 }
-
-// SCENARIO("is_passport_id")
-// {
-//     WHEN("the payload is valid")
-//     {
-//         REQUIRE(jetassign::is_passport_id("HK12345678A"));
-//     }
-// }

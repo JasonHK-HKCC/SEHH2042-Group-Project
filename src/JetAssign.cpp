@@ -58,19 +58,26 @@ namespace stringutil
 
     vector<string> split(const string &input, const string &separator)
     {
-        vector<string> output = {};
+        vector<string> segments;
 
-        size_t start_pos = 0;
-        do
+        if (separator.empty())
         {
-            auto segment = input.substr(start_pos, input.find(separator, start_pos) - start_pos);
-
-            output.push_back(segment);
-            start_pos += segment.length() + separator.length();
+            segments.push_back(input);
         }
-        while (start_pos <= input.length());
+        else
+        {
+            size_t start_pos = 0;
+            do
+            {
+                auto segment = input.substr(start_pos, input.find(separator, start_pos) - start_pos);
 
-        return output;
+                segments.push_back(segment);
+                start_pos += segment.length() + separator.length();
+            }
+            while (start_pos <= input.length());
+        }
+
+        return segments;
     }
 }
 
