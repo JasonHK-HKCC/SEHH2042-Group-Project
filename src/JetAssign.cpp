@@ -110,7 +110,27 @@ namespace jetassign
         //     return other;
         // }
 
-        inline string to_string()
+        inline bool equals(const SeatLocation &other) const
+        {
+            return ((row == other.row) && (column == other.column));
+        }
+
+        inline string to_string() const
+        {
+            return (std::to_string(row + 1) + ((char) ('A' + column)));
+        }
+
+        inline bool operator ==(const SeatLocation &other) const
+        {
+            return equals(other);
+        }
+
+        inline bool operator !=(const SeatLocation &other) const
+        {
+            return !equals(other);
+        }
+
+        inline operator string() const
         {
             return (std::to_string(row + 1) + ((char) ('A' + column)));
         }

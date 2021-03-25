@@ -138,16 +138,42 @@ namespace
 
         WHEN("the input was an empty string")
         {
-            string name;
-            REQUIRE_FALSE(parse_passenger_name("", name));
-            REQUIRE(name == "");
+            string passenger_name;
+            REQUIRE_FALSE(parse_passenger_name("", passenger_name));
+            REQUIRE(passenger_name == "");
         }
 
         WHEN("the input was a string that contains a passenger's name")
         {
-            string name;
-            REQUIRE(parse_passenger_name("Chan Tai Man", name));
-            REQUIRE(name == "Chan Tai Man");
+            string passenger_name;
+            REQUIRE(parse_passenger_name("Chan Tai Man", passenger_name));
+            REQUIRE(passenger_name == "Chan Tai Man");
+        }
+    }
+
+    TEST_CASE("jetassign::parse_passport_id")
+    {
+        using jetassign::parse_passport_id;
+
+        WHEN("the input was an empty string")
+        {
+            string passport_id;
+            REQUIRE_FALSE(parse_passport_id("", passport_id));
+            REQUIRE(passport_id == "");
+        }
+
+        WHEN("the input was not a valid passport ID")
+        {
+            string passport_id;
+            REQUIRE_FALSE(parse_passport_id("Tiro Finale", passport_id));
+            REQUIRE(passport_id == "");
+        }
+
+        WHEN("the input was a valid passport ID")
+        {
+            string passport_id;
+            REQUIRE(parse_passport_id("HK12345678A", passport_id));
+            REQUIRE(passport_id == "HK12345678A");
         }
     }
 
