@@ -93,6 +93,8 @@ namespace jetassign
         const regex kPassportIdPattern("([0-9A-Z]+)", regex::icase);
 
         const regex kSeatLocationPattern("(1[0-3]|[1-9])([A-F])");
+
+        const auto kCompactAssignmentSeparator = "/";
     }
 
     struct SeatLocation
