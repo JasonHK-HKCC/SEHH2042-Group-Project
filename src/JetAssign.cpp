@@ -31,15 +31,20 @@ using std::istream;
 
 namespace stringutil
 {
+    namespace
+    {
+        const auto kWhitespace = "\t\n\v\f\r\x20\xA0";
+    }
+
     string trim_start(const string &input)
     {
-        const auto index = input.find_first_not_of(" ");
+        const auto index = input.find_first_not_of(kWhitespace);
         return ((index == string::npos) ? "" : input.substr(index));
     }
 
     string trim_end(const string &input)
     {
-        const auto index = input.find_last_not_of(" ");
+        const auto index = input.find_last_not_of(kWhitespace);
         return ((index == string::npos) ? "" : input.substr(0, index + 1));
     }
 
