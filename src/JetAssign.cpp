@@ -119,12 +119,12 @@ namespace jetassign
         return regex_search(input, kPassportIdPattern);
     }
 
-    bool parse_name(string input, string &name)
+    bool parse_passenger_name(string input, string &passenger_name)
     {
         const auto trimmed_input = stringutil::trim(input);
         if (trimmed_input.empty()) { return false; }
 
-        name = trimmed_input;
+        passenger_name = trimmed_input;
         return true;
     }
 

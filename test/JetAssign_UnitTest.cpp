@@ -130,6 +130,25 @@ TEST_CASE("jetassign::is_passport_id")
     }
 }
 
+    TEST_CASE("jetassign::parse_passenger_name")
+    {
+        using jetassign::parse_passenger_name;
+
+        WHEN("the input was an empty string")
+        {
+            string name;
+            REQUIRE_FALSE(parse_passenger_name("", name));
+            REQUIRE(name == "");
+        }
+
+        WHEN("the input was a string that contains a passenger's name")
+        {
+            string name;
+            REQUIRE(parse_passenger_name("Chan Tai Man", name));
+            REQUIRE(name == "Chan Tai Man");
+        }
+    }
+
 TEST_CASE("jetassign::parse_seat_location")
 {
     using jetassign::parse_seat_location;
