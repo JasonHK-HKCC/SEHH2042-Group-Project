@@ -163,11 +163,11 @@ namespace jetassign
 
     bool parse_compact_assignment(const string &input, string &name, string &passport_id, SeatLocation &seat_location)
     {
-        const auto input_segments = stringutil::split(stringutil::trim(input), "/");
+        const auto input_segments = stringutil::split(stringutil::trim(input), kCompactAssignmentSeparator);
         if (input_segments.size() != 3) { return false; }
 
         string parsed_name;
-        if (!parse_name(input_segments.at(0), parsed_name))
+        if (!parse_passenger_name(input_segments.at(0), parsed_name))
         {
             return false;
         }
