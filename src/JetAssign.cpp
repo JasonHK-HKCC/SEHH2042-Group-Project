@@ -14,10 +14,6 @@ using std::size_t;
 // array
 using std::array;
 
-// exception
-using std::exception;
-using std::runtime_error;
-
 // iostream
 using std::cin;
 using std::cout;
@@ -192,6 +188,9 @@ namespace jetassign
      **/
     namespace exceptions
     {
+        using std::invalid_argument;
+        using std::runtime_error;
+
         using core::SeatLocation;
 
         /**
@@ -213,7 +212,7 @@ namespace jetassign
                 SeatLocation location;
         };
 
-        class InvalidInputError : public std::invalid_argument
+        class InvalidInputError : public invalid_argument
         {
             using invalid_argument::invalid_argument;
         };
