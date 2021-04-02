@@ -228,10 +228,25 @@ namespace jetassign
                 /**
                  * Returns the location of the occupied seat.
                  **/
-                const SeatLocation get_location() const { return location; }
+                const SeatLocation get_location() const;
 
             private:
                 SeatLocation location;
+        };
+
+        class InvalidInputError : public std::invalid_argument
+        {
+            using invalid_argument::invalid_argument;
+        };
+
+        class EmptyInputError : public InvalidInputError
+        {
+            using InvalidInputError::InvalidInputError;
+        };
+
+        class MalformedInputError : public InvalidInputError
+        {
+            using InvalidInputError::InvalidInputError;
         };
     }
 
@@ -243,10 +258,24 @@ namespace jetassign
     bool parse_passenger_name(string input, string &passenger_name)
     {
         const auto trimmed_input = stringutil::trim(input);
-        if (trimmed_input.empty()) { return false; }
+        if (trimmed_input.empty())
+        {
+            throw exceptions::EmptyInputError("The passenger's name must not be empty.");
+        }
 
         passenger_name = trimmed_input;
         return true;
+    }
+
+    string parse_passenger_name_2(string input)
+    {
+        const auto passenger_name = stringutil::trim(input);
+        if (passenger_name.empty())
+        {
+            throw exceptions::EmptyInputError("The passenger's name must not be empty.");
+        }
+
+        return passenger_name;
     }
 
     bool parse_passport_id(const string &input, string &passport_id)
@@ -261,6 +290,22 @@ namespace jetassign
         return true;
     }
 
+    string parse_passport_id_2(const string &input)
+    {
+        auto passport_id = stringutil::trim(input);
+        if (passport_id.empty())
+        {
+            throw exceptions::EmptyInputError("The passport ID must not be empty.");
+        }
+
+        if (!regex_match(passport_id, kPassportIdPattern))
+        {
+            throw exceptions::MalformedInputError("Only alphanumeric characters were allowed.");
+        }
+
+        return passport_id;
+    }
+
     bool parse_seat_location(const string &input, size_t &row, size_t &column)
     {
         auto trimmed_input = stringutil::to_uppercase(stringutil::trim(input));
@@ -268,7 +313,7 @@ namespace jetassign
         std::smatch match_result;
         if (!regex_match(input, match_result, kSeatLocationPattern))
         {
-            return false;
+            throw exceptions::EmptyInputError("The passenger's name must not be empty.");
         }
 
         row = std::stoi(match_result.str(1)) - 1;
@@ -350,12 +395,65 @@ namespace jetassign
         seating_plan.at(location.get_index()) = passenger;
     }
     #pragma endregion
+
+    const SeatLocation exceptions::SeatOccupiedError::get_location() const
+    {
+        return location;
+    }
+
+    namespace ui
+    {
+        string get_line()
+        {
+            string line;
+            std::getline(cin, line);
+
+            return line;
+        }
+
+        string get_passenger_name()
+        {
+            while (true)
+            {
+                cout << "Passenger Name: ";
+                auto input = get_line();
+
+                try
+                {
+                    return parse_passenger_name_2(input);
+                }
+                catch(const exceptions::InvalidInputError &e)
+                {
+                    std::cerr << "    Error: " << e.what() << endl;;
+                }  
+            }
+        }
+
+        string get_passport_id()
+        {
+            while (true)
+            {
+                cout << "Passport ID: ";
+                auto input = get_line();
+
+                try
+                {
+                    return parse_passport_id_2(input);
+                }
+                catch(const exceptions::InvalidInputError &e)
+                {
+                    std::cerr << "    Error: " << e.what() << endl;;
+                } 
+            }
+        }
+    }
 }
 
 #ifndef _TEST
 int main(int argc, const char* argv[])
 {
-    cin;
+    jetassign::ui::get_passenger_name();
+    jetassign::ui::get_passport_id();
     return 0;
 }
 #endif
