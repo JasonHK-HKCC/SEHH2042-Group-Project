@@ -5,9 +5,31 @@
 #include <vector>
 #include <regex>
 #include <iostream>
-#include <functional>
+
+#include <climits>
 
 using std::size_t;
+
+// array
+using std::array;
+
+// exception
+using std::exception;
+using std::runtime_error;
+
+// iostream
+using std::cin;
+using std::cout;
+using std::endl;
+using std::istream;
+
+// optional
+using std::optional;
+
+// regex
+using std::regex;
+using std::regex_match;
+using std::regex_search;
 
 // string
 using std::string;
@@ -15,19 +37,7 @@ using std::string;
 // vector
 using std::vector;
 
-// array
-using std::array;
-
-// regex
-using std::regex;
-using std::regex_match;
-using std::regex_search;
-
-// iostream
-using std::cin;
-using std::cout;
-using std::endl;
-using std::istream;
+#define STRINGIFY(expression) #expression
 
 namespace stringutil
 {
@@ -90,6 +100,10 @@ namespace jetassign
 {
     namespace
     {
+        const auto kRowLength = 13;
+        const auto kColumnLength = 6;
+        const auto kJetSize = kRowLength * kColumnLength;
+
         const regex kPassportIdPattern("([0-9A-Z]+)", regex::icase);
 
         const regex kSeatLocationPattern("(1[0-3]|[1-9])([A-F])");
@@ -97,44 +111,129 @@ namespace jetassign
         const auto kCompactAssignmentSeparator = "/";
     }
 
-    struct SeatLocation
+    class SeatLocation
     {
-        size_t row;
-        size_t column;
+        public:
+            static const size_t unknown = ULONG_MAX;
 
-        // SeatLocation& operator =(SeatLocation &other)
-        // {
-        //     row    = other.row;
-        //     column = other.column;
-        //
-        //     return other;
-        // }
+            SeatLocation() {}
 
-        inline bool equals(const SeatLocation &other) const
-        {
-            return ((row == other.row) && (column == other.column));
-        }
+            SeatLocation(size_t index) : SeatLocation(index / kColumnLength, index % kColumnLength) {}
 
-        inline string to_string() const
-        {
-            return (std::to_string(row + 1) + ((char) ('A' + column)));
-        }
+            SeatLocation(size_t row, size_t column) : row { row }, column { column }
+            {
+                if (row >= kRowLength)
+                {
+                    throw std::range_error("The range of the row must between 0 and 12 (inclusive).");
+                }
+                else if (column >= kColumnLength)
+                {
+                    throw std::range_error("The range of the column must between 0 and 5 (inclusive).");
+                }
+            };
 
-        inline bool operator ==(const SeatLocation &other) const
-        {
-            return equals(other);
-        }
+            bool is_unknown() const
+            {
+                return ((row == unknown) || (column == unknown));
+            }
 
-        inline bool operator !=(const SeatLocation &other) const
-        {
-            return !equals(other);
-        }
+            size_t get_row() const { return row; }
 
-        inline operator string() const
-        {
-            return (std::to_string(row + 1) + ((char) ('A' + column)));
-        }
+            size_t get_column() const { return column; }
+
+            size_t get_index() const
+            {
+                return ((row * kColumnLength) + column);
+            }
+
+            bool equals(const SeatLocation &other) const
+            {
+                return ((row == other.row) && (column == other.column));
+            }
+
+            bool operator ==(const SeatLocation &other) const
+            {
+                return equals(other);
+            }
+
+            bool operator !=(const SeatLocation &other) const
+            {
+                return !equals(other);
+            }
+
+            string to_string() const
+            {
+                return this->is_unknown() ? "" : (std::to_string(row + 1) + ((char) ('A' + column)));
+            }
+
+        private:
+            size_t row = unknown;
+            size_t column = unknown;
     };
+
+    struct Passenger
+    {
+        string name;
+        string passport_id;
+    };
+
+    class SeatingPlan
+    {
+        public:
+            SeatingPlan();
+
+            /**
+             * Determine whether the seat was already occupied by a passenger.
+             * 
+             * @param location The location of the seat.
+             **/
+            bool is_occupied(const SeatLocation &location) const
+            {
+                return seating_plan.at(location.get_index()).has_value();
+            }
+
+            /**
+             * Returns the passenger who was assigned to the given seat.
+             * 
+             * @param location The location of the seat.
+             **/
+            const optional<Passenger> at(const SeatLocation &location) const;
+
+            SeatLocation location_of(const Passenger &passenger) const;
+
+            /**
+             * Assign a passenger to a specific seat.
+             * 
+             * @param location  The location of the seat.
+             * @param passenger The passenger to be assigned.
+             **/
+            void assign(const SeatLocation &location, const Passenger &passenger);
+
+        private:
+            array<optional<Passenger>, kJetSize> seating_plan;
+    };
+
+    namespace exceptions
+    {
+        /**
+         * An error that will throw when the requested seat was already occupied by another passenger.
+         **/
+        class SeatOccupiedError : public runtime_error
+        {
+            public:
+                SeatOccupiedError(const SeatLocation &location)
+                    : runtime_error("The requested seat was already occupied by another passenger."),
+                    location { location } {};
+
+                /**
+                 * Returns the location of the occupied seat.
+                 **/
+                const SeatLocation get_location() const { return location; }
+
+            private:
+                SeatLocation location;
+        };
+    }
 
     bool is_passport_id(string input)
     {
@@ -180,16 +279,20 @@ namespace jetassign
 
     bool parse_seat_location(const string &input, SeatLocation &location)
     {
-        return parse_seat_location(input, location.row, location.column);
+        size_t row, column;
+        if (!parse_seat_location(input, row, column)) { return false; }
+
+        location = SeatLocation(row, column);
+        return true;
     }
 
-    bool parse_compact_assignment(const string &input, string &name, string &passport_id, SeatLocation &seat_location)
+    bool parse_compact_assignment(const string &input, string &passenger_name, string &passport_id, SeatLocation &seat_location)
     {
         const auto input_segments = stringutil::split(stringutil::trim(input), kCompactAssignmentSeparator);
         if (input_segments.size() != 3) { return false; }
 
-        string parsed_name;
-        if (!parse_passenger_name(input_segments.at(0), parsed_name))
+        string parsed_passenger_name;
+        if (!parse_passenger_name(input_segments.at(0), parsed_passenger_name))
         {
             return false;
         }
@@ -206,17 +309,53 @@ namespace jetassign
             return false;
         }
 
-        name          = parsed_name;
-        passport_id   = parsed_passport_id;
-        seat_location = parsed_seat_location;
+        passenger_name = parsed_passenger_name;
+        passport_id    = parsed_passport_id;
+        seat_location  = parsed_seat_location;
 
         return true;
     }
+
+    #pragma region SeatingPlan
+    SeatingPlan::SeatingPlan()
+    {
+
+    }
+
+    const optional<Passenger> SeatingPlan::at(const SeatLocation &location) const
+    {
+        return seating_plan.at(location.get_index());
+    }
+
+    // SeatLocation SeatingPlan::location_of(const Passenger &passenger) const
+    // {
+    //     // array<optional<Passenger>, kJetSize>::iterator element = std::find(seating_plan.begin(), seating_plan.end(), passenger);
+    //     // if (element != seating_plan.end())
+    //     // {
+    //     //     return SeatLocation(std::distance(seating_plan.begin(), element));
+    //     // }
+    //     // else
+    //     // {
+    //     //     return SeatLocation();
+    //     // }
+    // }
+
+    void SeatingPlan::assign(const SeatLocation &location, const Passenger &passenger)
+    {
+        if (this->is_occupied(location))
+        {
+            throw exceptions::SeatOccupiedError(location);
+        }
+
+        seating_plan.at(location.get_index()) = passenger;
+    }
+    #pragma endregion
 }
 
 #ifndef _TEST
 int main(int argc, const char* argv[])
 {
+    cin;
     return 0;
 }
 #endif
