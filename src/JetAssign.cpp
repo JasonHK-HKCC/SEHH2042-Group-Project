@@ -115,14 +115,32 @@ namespace jetassign
                 string get_name() const { return name; }
 
                 string get_passport_id() const { return passport_id; }
+
+                bool equals(const Passenger &other) const;
+
+                bool operator ==(const Passenger &other) const { return equals(other); }
+
+                bool operator !=(const Passenger &other) const { return !equals(other); }
+
             private:
+                /**
+                 * The name of the passenger.
+                 **/
                 string name;
+
+                /**
+                 * The passport ID of the passenger.
+                 **/
                 string passport_id;
         };
 
         class SeatLocation
         {
             public:
+                static string row_to_string(size_t row);
+
+                static string column_to_string(size_t column);
+
                 SeatLocation(size_t index);
 
                 SeatLocation(size_t row, size_t column);
@@ -142,7 +160,14 @@ namespace jetassign
                 string to_string() const;
 
             private:
+                /**
+                 * The row of the seat.
+                 **/
                 size_t row;
+
+                /**
+                 * The column of the seat.
+                 **/
                 size_t column;
         };
 
@@ -179,7 +204,7 @@ namespace jetassign
                 /**
                  * The internal seating plan.
                  **/
-                array<optional<Passenger>, kJetSize> seating_plan;
+                array<array<optional<Passenger>, kColumnLength>, kRowLength> seating_plan;
         };
     }
 
@@ -239,8 +264,7 @@ namespace jetassign
         class CompactAssignment
         {
             public:
-                CompactAssignment(const string &passenger_name, const string &passport_id, const SeatLocation &seat_location)
-                    : passenger(passenger_name, passport_id), location { seat_location } {};
+                CompactAssignment(const string &passenger_name, const string &passport_id, const SeatLocation &seat_location);
 
                 Passenger get_passenger() const { return passenger; }
 
@@ -292,6 +316,8 @@ int main(int argc, const char* argv[])
 
 namespace jetassign::core
 {
+    using std::range_error;
+
     namespace
     {
         using std::to_string;
@@ -303,26 +329,13 @@ namespace jetassign::core
 
     bool SeatingPlan::is_occupied(const SeatLocation &location) const
     {
-        return seating_plan.at(location.get_index()).has_value();
+        return seating_plan.at(location.get_row()).at(location.get_column()).has_value();
     }
 
     const optional<Passenger> SeatingPlan::at(const SeatLocation &location) const
     {
-        return seating_plan.at(location.get_index());
+        return seating_plan.at(location.get_row()).at(location.get_column());
     }
-
-    // SeatLocation SeatingPlan::location_of(const Passenger &passenger) const
-    // {
-    //     // array<optional<Passenger>, kJetSize>::iterator element = std::find(seating_plan.begin(), seating_plan.end(), passenger);
-    //     // if (element != seating_plan.end())
-    //     // {
-    //     //     return SeatLocation(std::distance(seating_plan.begin(), element));
-    //     // }
-    //     // else
-    //     // {
-    //     //     return SeatLocation();
-    //     // }
-    // }
 
     void SeatingPlan::assign(const SeatLocation &location, const Passenger &passenger)
     {
@@ -331,11 +344,36 @@ namespace jetassign::core
             throw exceptions::SeatOccupiedError(location);
         }
 
-        seating_plan.at(location.get_index()) = passenger;
+        seating_plan.at(location.get_row()).at(location.get_column()) = passenger;
     }
 
     Passenger::Passenger(const string &name, const string &passport_id)
         : name { name }, passport_id { passport_id } {}
+
+    bool Passenger::equals(const Passenger &other) const
+    {
+        return ((name == other.name) && (passport_id == other.passport_id));
+    }
+
+    string SeatLocation::row_to_string(size_t row)
+    {
+        if (row >= kRowLength)
+        {
+            throw range_error(kSeatLocationRowRangeErrorMessage);
+        }
+
+        return std::to_string(row + 1);
+    }
+
+    string SeatLocation::column_to_string(size_t column)
+    {
+        if (column >= kColumnLength)
+        {
+            throw range_error(kSeatLocationColumnRangeErrorMessage);
+        }
+
+        return std::to_string((char) ('A' + column));
+    }
 
     SeatLocation::SeatLocation(size_t index)
         : SeatLocation(index / kColumnLength, index % kColumnLength) {}
@@ -345,11 +383,11 @@ namespace jetassign::core
     {
         if (row >= kRowLength)
         {
-            throw std::range_error(kSeatLocationRowRangeErrorMessage);
+            throw range_error(kSeatLocationRowRangeErrorMessage);
         }
         else if (column >= kColumnLength)
         {
-            throw std::range_error(kSeatLocationColumnRangeErrorMessage);
+            throw range_error(kSeatLocationColumnRangeErrorMessage);
         }
     }
 
@@ -365,7 +403,7 @@ namespace jetassign::core
 
     string SeatLocation::to_string() const
     {
-        return (std::to_string(row + 1) + ((char) ('A' + column)));
+        return (row_to_string(row) + column_to_string(column));
     }
 }
 
@@ -447,6 +485,9 @@ namespace jetassign::input
             } 
         }
     }
+
+    CompactAssignment::CompactAssignment(const string &passenger_name, const string &passport_id, const SeatLocation &seat_location)
+        : passenger(passenger_name, passport_id), location { seat_location } {};
 
     namespace parsers
     {
