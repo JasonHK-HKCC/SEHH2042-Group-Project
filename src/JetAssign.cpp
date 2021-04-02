@@ -5,6 +5,7 @@
 #include <vector>
 #include <regex>
 #include <iostream>
+#include <iomanip>
 
 #include <climits>
 
@@ -458,8 +459,6 @@ int main(int argc, const char* argv[])
 }
 #endif
 
-#include <iostream>
-#include <iomanip>
 using namespace std;
 
 int main() {
