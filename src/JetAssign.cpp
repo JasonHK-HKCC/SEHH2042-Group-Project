@@ -103,118 +103,96 @@ namespace jetassign
         const auto kRowLength = 13;
         const auto kColumnLength = 6;
         const auto kJetSize = kRowLength * kColumnLength;
-
-        const regex kPassportIdPattern("([0-9A-Z]+)", regex::icase);
-
-        const regex kSeatLocationPattern("(1[0-3]|[1-9])([A-F])");
-
-        const auto kCompactAssignmentSeparator = "/";
     }
 
-    class SeatLocation
+    /**
+     * The core component.
+     **/
+    namespace core
     {
-        public:
-            static const size_t unknown = ULONG_MAX;
+        class Passenger
+        {
+            public:
+                Passenger(const string &name, const string &passport_id);
 
-            SeatLocation() {}
+                string get_name() const { return name; }
 
-            SeatLocation(size_t index) : SeatLocation(index / kColumnLength, index % kColumnLength) {}
+                string get_passport_id() const { return passport_id; }
+            private:
+                string name;
+                string passport_id;
+        };
 
-            SeatLocation(size_t row, size_t column) : row { row }, column { column }
-            {
-                if (row >= kRowLength)
-                {
-                    throw std::range_error("The range of the row must between 0 and 12 (inclusive).");
-                }
-                else if (column >= kColumnLength)
-                {
-                    throw std::range_error("The range of the column must between 0 and 5 (inclusive).");
-                }
-            };
+        class SeatLocation
+        {
+            public:
+                SeatLocation(size_t index);
 
-            bool is_unknown() const
-            {
-                return ((row == unknown) || (column == unknown));
-            }
+                SeatLocation(size_t row, size_t column);
 
-            size_t get_row() const { return row; }
+                size_t get_row() const { return row; }
 
-            size_t get_column() const { return column; }
+                size_t get_column() const { return column; }
 
-            size_t get_index() const
-            {
-                return ((row * kColumnLength) + column);
-            }
+                size_t get_index() const;
 
-            bool equals(const SeatLocation &other) const
-            {
-                return ((row == other.row) && (column == other.column));
-            }
+                bool equals(const SeatLocation &other) const;
 
-            bool operator ==(const SeatLocation &other) const
-            {
-                return equals(other);
-            }
+                bool operator ==(const SeatLocation &other) const { return equals(other); }
 
-            bool operator !=(const SeatLocation &other) const
-            {
-                return !equals(other);
-            }
+                bool operator !=(const SeatLocation &other) const { return !equals(other); }
 
-            string to_string() const
-            {
-                return this->is_unknown() ? "" : (std::to_string(row + 1) + ((char) ('A' + column)));
-            }
+                string to_string() const;
 
-        private:
-            size_t row = unknown;
-            size_t column = unknown;
-    };
+            private:
+                size_t row;
+                size_t column;
+        };
 
-    struct Passenger
-    {
-        string name;
-        string passport_id;
-    };
+        class SeatingPlan
+        {
+            public:
+                SeatingPlan();
 
-    class SeatingPlan
-    {
-        public:
-            SeatingPlan();
+                /**
+                 * Determine whether the seat was already occupied by a passenger.
+                 * 
+                 * @param location The location of the seat.
+                 **/
+                bool is_occupied(const SeatLocation &location) const;
 
-            /**
-             * Determine whether the seat was already occupied by a passenger.
-             * 
-             * @param location The location of the seat.
-             **/
-            bool is_occupied(const SeatLocation &location) const
-            {
-                return seating_plan.at(location.get_index()).has_value();
-            }
+                /**
+                 * Returns the passenger who was assigned to the given seat.
+                 * 
+                 * @param location The location of the seat.
+                 **/
+                const optional<Passenger> at(const SeatLocation &location) const;
 
-            /**
-             * Returns the passenger who was assigned to the given seat.
-             * 
-             * @param location The location of the seat.
-             **/
-            const optional<Passenger> at(const SeatLocation &location) const;
+                SeatLocation location_of(const Passenger &passenger) const;
 
-            SeatLocation location_of(const Passenger &passenger) const;
+                /**
+                 * Assign a passenger to a specific seat.
+                 * 
+                 * @param location  The location of the seat.
+                 * @param passenger The passenger to be assigned.
+                 **/
+                void assign(const SeatLocation &location, const Passenger &passenger);
 
-            /**
-             * Assign a passenger to a specific seat.
-             * 
-             * @param location  The location of the seat.
-             * @param passenger The passenger to be assigned.
-             **/
-            void assign(const SeatLocation &location, const Passenger &passenger);
+            private:
+                /**
+                 * The internal seating plan.
+                 **/
+                array<optional<Passenger>, kJetSize> seating_plan;
+        };
+    }
 
-        private:
-            array<optional<Passenger>, kJetSize> seating_plan;
-    };
-
+    /**
+     * The exceptions component.
+     **/
     namespace exceptions
     {
+        using core::SeatLocation;
+
         /**
          * An error that will throw when the requested seat was already occupied by another passenger.
          **/
@@ -228,7 +206,7 @@ namespace jetassign
                 /**
                  * Returns the location of the occupied seat.
                  **/
-                const SeatLocation get_location() const;
+                const SeatLocation get_location() const { return location; }
 
             private:
                 SeatLocation location;
@@ -250,141 +228,82 @@ namespace jetassign
         };
     }
 
-    bool is_passport_id(string input)
+    /**
+     * The input component.
+     **/
+    namespace input
     {
-        return regex_search(input, kPassportIdPattern);
+        using core::Passenger;
+        using core::SeatLocation;
+
+        class CompactAssignment
+        {
+            public:
+                CompactAssignment(const string &passenger_name, const string &passport_id, const SeatLocation &seat_location)
+                    : passenger(passenger_name, passport_id), location { seat_location } {};
+
+                Passenger get_passenger() const { return passenger; }
+
+                SeatLocation get_location() const { return location; }
+
+            private:
+                Passenger passenger;
+                SeatLocation location;
+        };
+
+        /**
+         * Read the user's input until an EOL character was received.
+         **/
+        string read_line();
+
+        string get_passenger_name();
+
+        string get_passport_id();
+
+        SeatLocation get_seat_location();
+
+        Passenger get_passenger();
+
+        /**
+         * The input parsers component.
+         **/
+        namespace parsers
+        {
+            string parse_passenger_name(const string &input);
+
+            string parse_passport_id(const string &input);
+
+            SeatLocation parse_seat_location(const string &input);
+
+            CompactAssignment parse_compact_assignment(const string &input);
+        }
+    }
+}
+
+#ifndef _TEST
+int main(int argc, const char* argv[])
+{
+    jetassign::input::get_passenger_name();
+    jetassign::input::get_passport_id();
+    jetassign::input::get_seat_location();
+    return 0;
+}
+#endif
+
+namespace jetassign::core
+{
+    namespace
+    {
+        using std::to_string;
+
+        auto kSeatLocationRowRangeErrorMessage = "The range of the row must between 0 and " + to_string(kRowLength - 1) + " (inclusive).";
+
+        auto kSeatLocationColumnRangeErrorMessage = "The range of the column must between 0 and " + to_string(kColumnLength - 1) + " (inclusive).";
     }
 
-    bool parse_passenger_name(string input, string &passenger_name)
+    bool SeatingPlan::is_occupied(const SeatLocation &location) const
     {
-        const auto trimmed_input = stringutil::trim(input);
-        if (trimmed_input.empty())
-        {
-            throw exceptions::EmptyInputError("The passenger's name must not be empty.");
-        }
-
-        passenger_name = trimmed_input;
-        return true;
-    }
-
-    string parse_passenger_name_2(string input)
-    {
-        const auto passenger_name = stringutil::trim(input);
-        if (passenger_name.empty())
-        {
-            throw exceptions::EmptyInputError("The passenger's name must not be empty.");
-        }
-
-        return passenger_name;
-    }
-
-    bool parse_passport_id(const string &input, string &passport_id)
-    {
-        auto trimmed_input = stringutil::trim(input);
-        if (!regex_match(trimmed_input, kPassportIdPattern))
-        {
-            return false;
-        }
-
-        passport_id = trimmed_input;
-        return true;
-    }
-
-    string parse_passport_id_2(const string &input)
-    {
-        auto passport_id = stringutil::trim(input);
-        if (passport_id.empty())
-        {
-            throw exceptions::EmptyInputError("The passport ID must not be empty.");
-        }
-
-        if (!regex_match(passport_id, kPassportIdPattern))
-        {
-            throw exceptions::MalformedInputError("Only alphanumeric characters were allowed.");
-        }
-
-        return passport_id;
-    }
-
-    bool parse_seat_location(const string &input, size_t &row, size_t &column)
-    {
-        auto trimmed_input = stringutil::to_uppercase(stringutil::trim(input));
-
-        std::smatch match_result;
-        if (!regex_match(input, match_result, kSeatLocationPattern))
-        {
-            throw exceptions::EmptyInputError("The passenger's name must not be empty.");
-        }
-
-        row = std::stoi(match_result.str(1)) - 1;
-        column = match_result.str(2).at(0) - 'A';
-        
-        return true;
-    }
-
-    bool parse_seat_location(const string &input, SeatLocation &location)
-    {
-        size_t row, column;
-        if (!parse_seat_location(input, row, column)) { return false; }
-
-        location = SeatLocation(row, column);
-        return true;
-    }
-
-    SeatLocation parse_seat_location_2(const string &input)
-    {
-        auto seat_location = stringutil::to_uppercase(stringutil::trim(input));
-        if (seat_location.empty())
-        {
-            throw exceptions::EmptyInputError("The seat location must not be empty.");
-        }
-
-        std::smatch match_result;
-        if (!regex_match(seat_location, match_result, kSeatLocationPattern))
-        {
-            throw exceptions::MalformedInputError("The seat location must be formatted as the row (1-13) followed by the column (A-F), e.g. 10D.");
-        }
-
-        auto row = std::stoi(match_result.str(1)) - 1;
-        auto column = match_result.str(2).at(0) - 'A';
-        
-        return SeatLocation(row, column);
-    }
-
-    bool parse_compact_assignment(const string &input, string &passenger_name, string &passport_id, SeatLocation &seat_location)
-    {
-        const auto input_segments = stringutil::split(stringutil::trim(input), kCompactAssignmentSeparator);
-        if (input_segments.size() != 3) { return false; }
-
-        string parsed_passenger_name;
-        if (!parse_passenger_name(input_segments.at(0), parsed_passenger_name))
-        {
-            return false;
-        }
-
-        string parsed_passport_id;
-        if (!parse_passport_id(input_segments.at(1), parsed_passport_id))
-        {
-            return false;
-        }
-
-        SeatLocation parsed_seat_location;
-        if (!parse_seat_location(input_segments.at(2), parsed_seat_location))
-        {
-            return false;
-        }
-
-        passenger_name = parsed_passenger_name;
-        passport_id    = parsed_passport_id;
-        seat_location  = parsed_seat_location;
-
-        return true;
-    }
-
-    #pragma region SeatingPlan
-    SeatingPlan::SeatingPlan()
-    {
-
+        return seating_plan.at(location.get_index()).has_value();
     }
 
     const optional<Passenger> SeatingPlan::at(const SeatLocation &location) const
@@ -414,85 +333,195 @@ namespace jetassign
 
         seating_plan.at(location.get_index()) = passenger;
     }
-    #pragma endregion
 
-    const SeatLocation exceptions::SeatOccupiedError::get_location() const
+    Passenger::Passenger(const string &name, const string &passport_id)
+        : name { name }, passport_id { passport_id } {}
+
+    SeatLocation::SeatLocation(size_t index)
+        : SeatLocation(index / kColumnLength, index % kColumnLength) {}
+
+    SeatLocation::SeatLocation(size_t row, size_t column)
+        : row { row }, column { column }
     {
-        return location;
+        if (row >= kRowLength)
+        {
+            throw std::range_error(kSeatLocationRowRangeErrorMessage);
+        }
+        else if (column >= kColumnLength)
+        {
+            throw std::range_error(kSeatLocationColumnRangeErrorMessage);
+        }
     }
 
-    namespace ui
+    size_t SeatLocation::get_index() const
     {
-        string get_line()
-        {
-            string line;
-            std::getline(cin, line);
+        return ((row * kColumnLength) + column);
+    }
 
-            return line;
-        }
+    bool SeatLocation::equals(const SeatLocation &other) const
+    {
+        return ((row == other.row) && (column == other.column));
+    }
 
-        string get_passenger_name()
-        {
-            while (true)
-            {
-                cout << "Passenger Name: ";
-                auto input = get_line();
-
-                try
-                {
-                    return parse_passenger_name_2(input);
-                }
-                catch(const exceptions::InvalidInputError &e)
-                {
-                    std::cerr << "    Error: " << e.what() << endl;;
-                }  
-            }
-        }
-
-        string get_passport_id()
-        {
-            while (true)
-            {
-                cout << "Passport ID: ";
-                auto input = get_line();
-
-                try
-                {
-                    return parse_passport_id_2(input);
-                }
-                catch(const exceptions::InvalidInputError &e)
-                {
-                    std::cerr << "    Error: " << e.what() << endl;;
-                } 
-            }
-        }
-
-        SeatLocation get_seat_location()
-        {
-            while (true)
-            {
-                cout << "Seat Location: ";
-                auto input = get_line();
-
-                try
-                {
-                    return parse_seat_location_2(input);
-                }
-                catch(const exceptions::InvalidInputError &e)
-                {
-                    std::cerr << "    Error: " << e.what() << endl;;
-                } 
-            }
-        }
+    string SeatLocation::to_string() const
+    {
+        return (std::to_string(row + 1) + ((char) ('A' + column)));
     }
 }
 
-#ifndef _TEST
-int main(int argc, const char* argv[])
+namespace jetassign::exceptions
 {
-    jetassign::ui::get_passenger_name();
-    jetassign::ui::get_passport_id();
-    jetassign::ui::get_seat_location();
-    return 0;
+
 }
-#endif
+
+namespace jetassign::input
+{
+    using exceptions::InvalidInputError;
+
+    string read_line()
+    {
+        string line;
+        std::getline(cin, line);
+
+        return line;
+    }
+
+    Passenger get_passenger()
+    {
+        auto passenger_name = get_passenger_name();
+        auto passport_id = get_passport_id();
+
+        return Passenger(passenger_name, passport_id);
+    }
+
+    string get_passenger_name()
+    {
+        while (true)
+        {
+            cout << "Passenger Name: ";
+            auto input = read_line();
+
+            try
+            {
+                return parsers::parse_passenger_name(input);
+            }
+            catch(const InvalidInputError &e)
+            {
+                std::cerr << "    Error: " << e.what() << endl;;
+            }  
+        }
+    }
+
+    string get_passport_id()
+    {
+        while (true)
+        {
+            cout << "Passport ID: ";
+            auto input = read_line();
+
+            try
+            {
+                return parsers::parse_passport_id(input);
+            }
+            catch(const InvalidInputError &e)
+            {
+                std::cerr << "    Error: " << e.what() << endl;;
+            } 
+        }
+    }
+
+    SeatLocation get_seat_location()
+    {
+        while (true)
+        {
+            cout << "Seat Location: ";
+            auto input = read_line();
+
+            try
+            {
+                return parsers::parse_seat_location(input);
+            }
+            catch(const InvalidInputError &e)
+            {
+                std::cerr << "    Error: " << e.what() << endl;;
+            } 
+        }
+    }
+
+    namespace parsers
+    {
+        using exceptions::EmptyInputError;
+        using exceptions::MalformedInputError;
+
+        namespace
+        {
+            const regex kPassportIdPattern("([0-9A-Z]+)", regex::icase);
+
+            const regex kSeatLocationPattern("(1[0-3]|[1-9])([A-F])");
+
+            const auto kCompactAssignmentSeparator = "/";
+        }
+
+        string parse_passenger_name(const string &input)
+        {
+            const auto passenger_name = stringutil::trim(input);
+            if (passenger_name.empty())
+            {
+                throw EmptyInputError("The passenger's name must not be empty.");
+            }
+
+            return passenger_name;
+        }
+
+        string parse_passport_id(const string &input)
+        {
+            auto passport_id = stringutil::trim(input);
+            if (passport_id.empty())
+            {
+                throw EmptyInputError("The passport ID must not be empty.");
+            }
+
+            if (!regex_match(passport_id, kPassportIdPattern))
+            {
+                throw MalformedInputError("Only alphanumeric characters were allowed.");
+            }
+
+            return passport_id;
+        }
+
+        SeatLocation parse_seat_location(const string &input)
+        {
+            auto seat_location = stringutil::to_uppercase(stringutil::trim(input));
+            if (seat_location.empty())
+            {
+                throw EmptyInputError("The seat location must not be empty.");
+            }
+
+            std::smatch match_result;
+            if (!regex_match(seat_location, match_result, kSeatLocationPattern))
+            {
+                throw MalformedInputError(R"(The seat location must be formatted as the row (1-13) followed by the column (A-F), e.g. "10D".)");
+            }
+
+            auto row = std::stoi(match_result.str(1)) - 1;
+            auto column = match_result.str(2).at(0) - 'A';
+            
+            return SeatLocation(row, column);
+        }
+
+        CompactAssignment parse_compact_assignment(const string &input)
+        {
+            const auto input_segments = stringutil::split(stringutil::trim(input), kCompactAssignmentSeparator);
+            if (input_segments.size() != 3)
+            {
+                throw exceptions::MalformedInputError(R"(The assignment entry should be formatted as "<Name>/<Passport ID>/<Seat Location>".)");
+            }
+
+            auto passenger_name = parse_passenger_name(input_segments.at(0));
+            auto passport_id = parse_passport_id(input_segments.at(1));
+            SeatLocation seat_location = parse_seat_location(input_segments.at(2));
+
+            return CompactAssignment(passenger_name, passport_id, seat_location);
+        }
+    }
+}
