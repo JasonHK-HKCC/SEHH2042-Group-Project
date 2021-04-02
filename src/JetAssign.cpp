@@ -201,7 +201,7 @@ namespace jetassign
             public:
                 SeatOccupiedError(const SeatLocation &location)
                     : runtime_error("The requested seat was already occupied by another passenger."),
-                    location { location } {};
+                      location { location } {};
 
                 /**
                  * Returns the location of the occupied seat.
