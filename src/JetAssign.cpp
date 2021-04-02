@@ -457,3 +457,35 @@ int main(int argc, const char* argv[])
     return 0;
 }
 #endif
+
+#include <iostream>
+#include <iomanip>
+using namespace std;
+
+int main() {
+	
+	int Option, passportID, classtype, list;
+
+	cout << "*** Details ***" << endl;
+	cout << "[1] Passenger" << endl;
+	cout << "[2] Class" << endl;
+	cout << "[3] Back" << endl;
+	cout << "*****************" << endl;
+	cout << "Option (1-3): ";
+	cin >> Option;
+
+	switch (Option) {
+	case '1': cout << "Please enter the passport ID: " << endl;
+              cin >> passportID
+              get_passport_id(passportID)
+			  break;
+	case '2': cout << "Please enter the class type";
+		      cin >> classtype;
+			  cout << list << endl;
+			  break;
+	case '3': break;
+	}
+    
+    return 0;
+}
+
