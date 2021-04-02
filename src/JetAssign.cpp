@@ -331,6 +331,26 @@ namespace jetassign
         return true;
     }
 
+    SeatLocation parse_seat_location_2(const string &input)
+    {
+        auto seat_location = stringutil::to_uppercase(stringutil::trim(input));
+        if (seat_location.empty())
+        {
+            throw exceptions::EmptyInputError("The seat location must not be empty.");
+        }
+
+        std::smatch match_result;
+        if (!regex_match(seat_location, match_result, kSeatLocationPattern))
+        {
+            throw exceptions::MalformedInputError("The seat location must be formatted as the row (1-13) followed by the column (A-F), e.g. 10D.");
+        }
+
+        auto row = std::stoi(match_result.str(1)) - 1;
+        auto column = match_result.str(2).at(0) - 'A';
+        
+        return SeatLocation(row, column);
+    }
+
     bool parse_compact_assignment(const string &input, string &passenger_name, string &passport_id, SeatLocation &seat_location)
     {
         const auto input_segments = stringutil::split(stringutil::trim(input), kCompactAssignmentSeparator);
@@ -446,6 +466,24 @@ namespace jetassign
                 } 
             }
         }
+
+        SeatLocation get_seat_location()
+        {
+            while (true)
+            {
+                cout << "Seat Location: ";
+                auto input = get_line();
+
+                try
+                {
+                    return parse_seat_location_2(input);
+                }
+                catch(const exceptions::InvalidInputError &e)
+                {
+                    std::cerr << "    Error: " << e.what() << endl;;
+                } 
+            }
+        }
     }
 }
 
@@ -454,6 +492,7 @@ int main(int argc, const char* argv[])
 {
     jetassign::ui::get_passenger_name();
     jetassign::ui::get_passport_id();
+    jetassign::ui::get_seat_location();
     return 0;
 }
 #endif
