@@ -573,14 +573,6 @@ namespace jetassign::input
         }
     }
 
-    Passenger get_passenger()
-    {
-        auto passenger_name = get_passenger_name();
-        auto passport_id = get_passport_id();
-
-        return Passenger(passenger_name, passport_id);
-    }
-
     string get_passenger_name()
     {
         while (true)
@@ -615,6 +607,14 @@ namespace jetassign::input
                 std::cerr << "    Error: " << e.what() << endl;;
             } 
         }
+    }
+
+    Passenger get_passenger()
+    {
+        auto passenger_name = get_passenger_name();
+        auto passport_id = get_passport_id();
+
+        return Passenger(passenger_name, passport_id);
     }
 
     SeatLocation get_seat_location()
