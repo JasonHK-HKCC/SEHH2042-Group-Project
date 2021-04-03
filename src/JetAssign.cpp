@@ -23,82 +23,68 @@ using std::istream;
 // optional
 using std::optional;
 
-// regex
-using std::regex;
-using std::regex_match;
-using std::regex_search;
-
 // string
 using std::string;
 
 // vector
 using std::vector;
 
+#define JET_ROW_LENGTH 13
+
+#define JET_COLUMN_LENGTH 6
+
 #define STRINGIFY(expression) #expression
 
+#define STRINGIFY_VALUE(value) STRINGIFY(value)
+
+/**
+ * Utility functions for std::string.
+ **/
 namespace stringutil
 {
-    namespace
-    {
-        const auto kWhitespace = "\t\n\v\f\r\x20\xA0";
-    }
+    /**
+     * Removes the leading and trailing whitespaces of a string.
+     * 
+     * @param input The string to be trimmed.
+     **/
+    string trim(const string &input);
 
-    string trim_start(const string &input)
-    {
-        const auto index = input.find_first_not_of(kWhitespace);
-        return ((index == string::npos) ? "" : input.substr(index));
-    }
+    /**
+     * Removes the leading whitespaces of a string.
+     * 
+     * @param input The string to be trimmed.
+     **/
+    string trim_start(const string &input);
 
-    string trim_end(const string &input)
-    {
-        const auto index = input.find_last_not_of(kWhitespace);
-        return ((index == string::npos) ? "" : input.substr(0, index + 1));
-    }
+    /**
+     * Removes the trailing whitespaces of a string.
+     * 
+     * @param input The string to be trimmed.
+     **/
+    string trim_end(const string &input);
 
-    string trim(const string &input)
-    {
-        return trim_end(trim_start(input));
-    }
+    /**
+     * Converts the string into uppercased.
+     * 
+     * @param input The string to be converted.
+     **/
+    string to_uppercase(string input);
 
-    string to_uppercase(string input)
-    {
-        string output = input;
-        std::transform(input.begin(), input.end(), output.begin(), [](unsigned char c) { return std::toupper(c); });
-
-        return output;
-    }
-
-    vector<string> split(const string &input, const string &separator)
-    {
-        vector<string> segments;
-
-        if (separator.empty())
-        {
-            segments.push_back(input);
-        }
-        else
-        {
-            size_t start_pos = 0;
-            do
-            {
-                auto segment = input.substr(start_pos, input.find(separator, start_pos) - start_pos);
-
-                segments.push_back(segment);
-                start_pos += segment.length() + separator.length();
-            }
-            while (start_pos <= input.length());
-        }
-
-        return segments;
-    }
+    /**
+     * Splits the string into multiple segments by the given separator.
+     * 
+     * @param input     The string to be split.
+     * @param separator The separator to split the string.
+     **/
+    vector<string> split(const string &input, const string &separator);
 }
 
 namespace jetassign
 {
     namespace
     {
-        const auto kRowLength = 13;
-        const auto kColumnLength = 6;
+        const auto kRowLength = JET_ROW_LENGTH;
+        const auto kColumnLength = JET_COLUMN_LENGTH;
         const auto kJetSize = kRowLength * kColumnLength;
     }
 
@@ -184,13 +170,18 @@ namespace jetassign
                 bool is_occupied(const SeatLocation &location) const;
 
                 /**
+                 * Determine whether a seat was already assigned to the passenger.
+                 **/
+                bool is_assigned(const Passenger &passenger) const;
+
+                /**
                  * Returns the passenger who was assigned to the given seat.
                  * 
                  * @param location The location of the seat.
                  **/
                 const optional<Passenger> at(const SeatLocation &location) const;
 
-                SeatLocation location_of(const Passenger &passenger) const;
+                optional<SeatLocation> location_of(const Passenger &passenger) const;
 
                 /**
                  * Assign a passenger to a specific seat.
@@ -280,6 +271,10 @@ namespace jetassign
          **/
         string read_line();
 
+        long get_menu_option(long max);
+
+        long get_menu_option(long min, long max);
+
         string get_passenger_name();
 
         string get_passport_id();
@@ -293,6 +288,9 @@ namespace jetassign
          **/
         namespace parsers
         {
+
+            long parse_menu_option(const string &input);
+
             string parse_passenger_name(const string &input);
 
             string parse_passport_id(const string &input);
@@ -302,14 +300,23 @@ namespace jetassign
             CompactAssignment parse_compact_assignment(const string &input);
         }
     }
+
+    auto seating_plan = core::SeatingPlan();
 }
 
 #ifndef _TEST
 int main(int argc, const char* argv[])
 {
-    jetassign::input::get_passenger_name();
-    jetassign::input::get_passport_id();
-    jetassign::input::get_seat_location();
+    // jetassign::input::get_passenger_name();
+    // jetassign::input::get_passport_id();
+    // jetassign::input::get_seat_location();
+
+    jetassign::core::Passenger passenger("J", "H");
+    jetassign::core::SeatLocation location(0, 0);
+
+    jetassign::seating_plan.assign(location, passenger);
+    cout << jetassign::seating_plan.location_of(passenger).value().to_string() << endl;
+
     return 0;
 }
 #endif
@@ -322,19 +329,42 @@ namespace jetassign::core
     {
         using std::to_string;
 
-        auto kSeatLocationRowRangeErrorMessage = "The range of the row must between 0 and " + to_string(kRowLength - 1) + " (inclusive).";
+        const auto kSeatLocationRowRangeErrorMessage = "The range of the row must between 0 (inclusive) and " STRINGIFY_VALUE(JET_ROW_LENGTH) " (exclusive).";
 
-        auto kSeatLocationColumnRangeErrorMessage = "The range of the column must between 0 and " + to_string(kColumnLength - 1) + " (inclusive).";
+        const auto kSeatLocationColumnRangeErrorMessage = "The range of the column must between 0 (inclusive) and " STRINGIFY_VALUE(JET_COLUMN_LENGTH) " (exclusive).";
     }
+
+    SeatingPlan::SeatingPlan() {}
 
     bool SeatingPlan::is_occupied(const SeatLocation &location) const
     {
         return seating_plan.at(location.get_row()).at(location.get_column()).has_value();
     }
 
+    bool SeatingPlan::is_assigned(const Passenger &passenger) const
+    {
+        return this->location_of(passenger).has_value();
+    }
+
     const optional<Passenger> SeatingPlan::at(const SeatLocation &location) const
     {
         return seating_plan.at(location.get_row()).at(location.get_column());
+    }
+
+    optional<SeatLocation> SeatingPlan::location_of(const Passenger &passenger) const
+    {
+        for (auto r = 0; r < kRowLength; r++)
+        {
+            for (auto c = 0; c < kColumnLength; c++)
+            {
+                if (seating_plan.at(r).at(c) == passenger)
+                {
+                    return SeatLocation(r, c);
+                }
+            }
+        }
+
+        return std::nullopt;
     }
 
     void SeatingPlan::assign(const SeatLocation &location, const Passenger &passenger)
@@ -372,7 +402,7 @@ namespace jetassign::core
             throw range_error(kSeatLocationColumnRangeErrorMessage);
         }
 
-        return std::to_string((char) ('A' + column));
+        return string(1, (char) ('A' + column));
     }
 
     SeatLocation::SeatLocation(size_t index)
@@ -422,6 +452,36 @@ namespace jetassign::input
         std::getline(cin, line);
 
         return line;
+    }
+
+    long get_menu_option(long max)
+    {
+        return get_menu_option(1, max);
+    }
+
+    long get_menu_option(long min, long max)
+    {
+        while (true)
+        {
+            cout << "Option (" << min << "-" << max << "): ";
+            auto input = read_line();
+
+            try
+            {
+                const auto selection = parsers::parse_menu_option(input);
+                if ((selection < min) || (selection > max))
+                {
+                    std::cerr << "    Error: The option selection must between " << min << " and " << max << " (inclusive)." << endl;
+                    continue;
+                }
+
+                return selection;
+            }
+            catch(const InvalidInputError &e)
+            {
+                std::cerr << "    Error: " << e.what() << endl;;
+            }  
+        }
     }
 
     Passenger get_passenger()
@@ -491,16 +551,39 @@ namespace jetassign::input
 
     namespace parsers
     {
+        using std::regex_match;
+        using std::smatch;
+
         using exceptions::EmptyInputError;
         using exceptions::MalformedInputError;
 
         namespace
         {
+            using std::regex;
+
+            const regex kMenuOptionPattern(R"((\d+))");
+
             const regex kPassportIdPattern("([0-9A-Z]+)", regex::icase);
 
             const regex kSeatLocationPattern("(1[0-3]|[1-9])([A-F])");
 
             const auto kCompactAssignmentSeparator = "/";
+        }
+
+        long parse_menu_option(const string &input)
+        {
+            const auto selection = stringutil::trim(input);
+            if (selection.empty())
+            {
+                throw EmptyInputError("The option selection must not be empty.");
+            }
+
+            if (!regex_match(selection, kMenuOptionPattern))
+            {
+                throw MalformedInputError("Only numeric characters were allowed.");
+            }
+
+            return std::stol(selection);
         }
 
         string parse_passenger_name(const string &input)
@@ -564,5 +647,62 @@ namespace jetassign::input
 
             return CompactAssignment(passenger_name, passport_id, seat_location);
         }
+    }
+}
+
+namespace stringutil
+{
+    namespace
+    {
+        const auto kWhitespace = "\t\n\v\f\r\x20\xA0";
+    }
+
+    string trim(const string &input)
+    {
+        return trim_end(trim_start(input));
+    }
+
+    string trim_start(const string &input)
+    {
+        const auto index = input.find_first_not_of(kWhitespace);
+        return ((index == string::npos) ? "" : input.substr(index));
+    }
+
+    string trim_end(const string &input)
+    {
+        const auto index = input.find_last_not_of(kWhitespace);
+        return ((index == string::npos) ? "" : input.substr(0, index + 1));
+    }
+
+    string to_uppercase(string input)
+    {
+        string output = input;
+        std::transform(input.begin(), input.end(), output.begin(), [](unsigned char c) { return std::toupper(c); });
+
+        return output;
+    }
+
+    vector<string> split(const string &input, const string &separator)
+    {
+        vector<string> segments;
+
+        if (separator.empty())
+        {
+            segments.push_back(input);
+        }
+        else
+        {
+            size_t start_pos = 0;
+            do
+            {
+                auto segment = input.substr(start_pos, input.find(separator, start_pos) - start_pos);
+
+                segments.push_back(segment);
+                start_pos += segment.length() + separator.length();
+            }
+            while (start_pos <= input.length());
+        }
+
+        return segments;
     }
 }
