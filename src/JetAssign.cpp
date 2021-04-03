@@ -468,13 +468,6 @@ namespace jetassign::core
 {
     using std::range_error;
 
-    namespace
-    {
-        const auto kSeatLocationRowRangeErrorMessage = "The range of the row must between 0 (inclusive) and " STRINGIFY_VALUE(JET_ROW_LENGTH) " (exclusive).";
-
-        const auto kSeatLocationColumnRangeErrorMessage = "The range of the column must between 0 (inclusive) and " STRINGIFY_VALUE(JET_COLUMN_LENGTH) " (exclusive).";
-    }
-
     SeatingPlan::SeatingPlan() {}
 
     bool SeatingPlan::is_occupied(const SeatLocation &location) const
@@ -522,7 +515,6 @@ namespace jetassign::core
     {
         if (this->is_occupied(location))
         {
-            cout << "DEBUG: this->is_occupied(location) => true" << endl; 
             seating_plan.at(location.get_row()).at(location.get_row()).reset();
         }
     }
@@ -535,11 +527,17 @@ namespace jetassign::core
         return ((name == other.name) && (passport_id == other.passport_id));
     }
 
+    #define RANGE_ERROR_MESSAGE(name, max) "The range of the " #name " must between 0 (inclusive) and " STRINGIFY(max) " (exclusive)."
+
+    #define ROW_RANGE_ERROR_MESSAGE RANGE_ERROR_MESSAGE(row, JET_ROW_LENGTH)
+
+    #define COLUMN_RANGE_ERROR_MESSAGE RANGE_ERROR_MESSAGE(column, JET_COLUMN_LENGTH)
+
     string SeatLocation::row_to_string(size_t row)
     {
         if (row >= JET_ROW_LENGTH)
         {
-            throw range_error(kSeatLocationRowRangeErrorMessage);
+            throw range_error(ROW_RANGE_ERROR_MESSAGE);
         }
 
         return std::to_string(row + 1);
@@ -549,7 +547,7 @@ namespace jetassign::core
     {
         if (column >= JET_COLUMN_LENGTH)
         {
-            throw range_error(kSeatLocationColumnRangeErrorMessage);
+            throw range_error(COLUMN_RANGE_ERROR_MESSAGE);
         }
 
         return string(1, (char) ('A' + column));
@@ -560,11 +558,11 @@ namespace jetassign::core
     {
         if (row >= JET_ROW_LENGTH)
         {
-            throw range_error(kSeatLocationRowRangeErrorMessage);
+            throw range_error(ROW_RANGE_ERROR_MESSAGE);
         }
         else if (column >= JET_COLUMN_LENGTH)
         {
-            throw range_error(kSeatLocationColumnRangeErrorMessage);
+            throw range_error(COLUMN_RANGE_ERROR_MESSAGE);
         }
     }
 
@@ -577,6 +575,10 @@ namespace jetassign::core
     {
         return (row_to_string(row) + column_to_string(column));
     }
+
+    #undef COLUMN_RANGE_ERROR_MESSAGE
+    #undef ROW_RANGE_ERROR_MESSAGE
+    #undef RANGE_ERROR_MESSAGE
 }
 
 namespace jetassign::exceptions
