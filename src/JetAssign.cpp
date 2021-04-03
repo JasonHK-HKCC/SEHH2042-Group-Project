@@ -232,7 +232,7 @@ namespace jetassign
                 /**
                  * The internal seating plan.
                  **/
-                array<array<optional<Passenger>, kColumnLength>, kRowLength> seating_plan;
+                array<array<optional<Passenger>, JET_COLUMN_LENGTH>, JET_ROW_LENGTH> seating_plan;
         };
     }
 
@@ -468,9 +468,9 @@ namespace jetassign::core
 
     optional<SeatLocation> SeatingPlan::location_of(const Passenger &passenger) const
     {
-        for (auto r = 0; r < kRowLength; r++)
+        for (auto r = 0; r < JET_ROW_LENGTH; r++)
         {
-            for (auto c = 0; c < kColumnLength; c++)
+            for (auto c = 0; c < JET_COLUMN_LENGTH; c++)
             {
                 if (seating_plan.at(r).at(c) == passenger)
                 {
@@ -511,7 +511,7 @@ namespace jetassign::core
 
     string SeatLocation::row_to_string(size_t row)
     {
-        if (row >= kRowLength)
+        if (row >= JET_ROW_LENGTH)
         {
             throw range_error(kSeatLocationRowRangeErrorMessage);
         }
@@ -521,7 +521,7 @@ namespace jetassign::core
 
     string SeatLocation::column_to_string(size_t column)
     {
-        if (column >= kColumnLength)
+        if (column >= JET_COLUMN_LENGTH)
         {
             throw range_error(kSeatLocationColumnRangeErrorMessage);
         }
@@ -530,16 +530,16 @@ namespace jetassign::core
     }
 
     SeatLocation::SeatLocation(size_t index)
-        : SeatLocation(index / kColumnLength, index % kColumnLength) {}
+        : SeatLocation(index / JET_ROW_LENGTH, index % JET_COLUMN_LENGTH) {}
 
     SeatLocation::SeatLocation(size_t row, size_t column)
         : row { row }, column { column }
     {
-        if (row >= kRowLength)
+        if (row >= JET_ROW_LENGTH)
         {
             throw range_error(kSeatLocationRowRangeErrorMessage);
         }
-        else if (column >= kColumnLength)
+        else if (column >= JET_COLUMN_LENGTH)
         {
             throw range_error(kSeatLocationColumnRangeErrorMessage);
         }
@@ -547,7 +547,7 @@ namespace jetassign::core
 
     size_t SeatLocation::get_index() const
     {
-        return ((row * kColumnLength) + column);
+        return ((row * JET_COLUMN_LENGTH) + column);
     }
 
     bool SeatLocation::equals(const SeatLocation &other) const
