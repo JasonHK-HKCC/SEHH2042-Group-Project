@@ -289,9 +289,11 @@ namespace jetassign
 
         string get_passport_id();
 
+        Passenger get_passenger();
+
         SeatLocation get_seat_location();
 
-        Passenger get_passenger();
+        vector<CompactAssignment> get_compact_assignments();
 
         /**
          * The input parsers component.
@@ -635,6 +637,28 @@ namespace jetassign::input
         }
     }
 
+    vector<CompactAssignment> get_compact_assignments()
+    {
+        vector<CompactAssignment> assignments;
+        while (true)
+        {
+            cout << "Seat Location: ";
+            auto input = read_line();
+            if (stringutil::trim(input) == "0") { break; }
+
+            try
+            {
+                assignments.push_back(parsers::parse_compact_assignment(input));
+            }
+            catch(const InvalidInputError &e)
+            {
+                std::cerr << "    Error: " << e.what() << endl;;
+            } 
+        }
+
+        return assignments;
+    }
+
     CompactAssignment::CompactAssignment(const string &passenger_name, const string &passport_id, const SeatLocation &seat_location)
         : passenger(passenger_name, passport_id), location { seat_location } {};
 
@@ -732,7 +756,7 @@ namespace jetassign::input
 
             auto passenger_name = parse_passenger_name(input_segments.at(0));
             auto passport_id = parse_passport_id(input_segments.at(1));
-            SeatLocation seat_location = parse_seat_location(input_segments.at(2));
+            auto seat_location = parse_seat_location(input_segments.at(2));
 
             return CompactAssignment(passenger_name, passport_id, seat_location);
         }
