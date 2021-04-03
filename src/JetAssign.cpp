@@ -147,6 +147,9 @@ namespace jetassign
                 string passport_id;
         };
 
+        /**
+         * Represents the location of a seat.
+         **/
         class SeatLocation
         {
             public:
@@ -154,32 +157,55 @@ namespace jetassign
 
                 static string column_to_string(size_t column);
 
-                SeatLocation(size_t index);
-
+                /**
+                 * Initialize a seat location with its position.
+                 * 
+                 * @param row    The row location of the seat.
+                 * @param column The column location of the seat.
+                 **/
                 SeatLocation(size_t row, size_t column);
 
+                /**
+                 * Returns the row location of the seat.
+                 **/
                 size_t get_row() const { return row; }
 
+                /**
+                 * Returns the column location of the seat.
+                 **/
                 size_t get_column() const { return column; }
 
-                size_t get_index() const;
-
+                /**
+                 * Determine whether two instances represent the same seat location.
+                 * 
+                 * @param other The other instance.
+                 **/
                 bool equals(const SeatLocation &other) const;
 
+                /**
+                 * Determine whether two instances represent the same seat location.
+                 * 
+                 * @param other The other instance.
+                 **/
                 bool operator ==(const SeatLocation &other) const { return equals(other); }
 
+                /**
+                 * Determine whether two instances represent different seat location.
+                 * 
+                 * @param other The other instance.
+                 **/
                 bool operator !=(const SeatLocation &other) const { return !equals(other); }
 
                 string to_string() const;
 
             private:
                 /**
-                 * The row of the seat.
+                 * The row location of the seat.
                  **/
                 size_t row;
 
                 /**
-                 * The column of the seat.
+                 * The column location of the seat.
                  **/
                 size_t column;
         };
@@ -529,9 +555,6 @@ namespace jetassign::core
         return string(1, (char) ('A' + column));
     }
 
-    SeatLocation::SeatLocation(size_t index)
-        : SeatLocation(index / JET_ROW_LENGTH, index % JET_COLUMN_LENGTH) {}
-
     SeatLocation::SeatLocation(size_t row, size_t column)
         : row { row }, column { column }
     {
@@ -543,11 +566,6 @@ namespace jetassign::core
         {
             throw range_error(kSeatLocationColumnRangeErrorMessage);
         }
-    }
-
-    size_t SeatLocation::get_index() const
-    {
-        return ((row * JET_COLUMN_LENGTH) + column);
     }
 
     bool SeatLocation::equals(const SeatLocation &other) const
