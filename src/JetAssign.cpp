@@ -1,11 +1,11 @@
 #include <algorithm>
-#include <limits>
-#include <string>
 #include <array>
-#include <vector>
-#include <regex>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <limits>
+#include <regex>
+#include <string>
+#include <vector>
 
 #include <climits>
 
