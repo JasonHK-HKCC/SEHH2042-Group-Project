@@ -80,33 +80,59 @@ namespace stringutil
     vector<string> split(const string &input, const string &separator);
 }
 
+/**
+ * The internals of JetAssign
+ **/
 namespace jetassign
 {
-    namespace
-    {
-        const auto kRowLength = JET_ROW_LENGTH;
-        const auto kColumnLength = JET_COLUMN_LENGTH;
-        const auto kJetSize = kRowLength * kColumnLength;
-    }
-
     /**
      * The core component.
      **/
     namespace core
     {
+        /**
+         * Represents a passenger.
+         **/
         class Passenger
         {
             public:
+                /**
+                 * Initialize a passenger with its information.
+                 * 
+                 * @param name        The name of the passenger.
+                 * @param passport_id The passport ID of the passenger.
+                 **/
                 Passenger(const string &name, const string &passport_id);
 
+                /**
+                 * Returns the name of the passenger.
+                 **/
                 string get_name() const { return name; }
 
+                /**
+                 * Returns the passport ID of the passenger.
+                 **/
                 string get_passport_id() const { return passport_id; }
 
+                /**
+                 * Determine whether two instances represent the same passenger.
+                 * 
+                 * @param other The other instance.
+                 **/
                 bool equals(const Passenger &other) const;
 
+                /**
+                 * Determine whether two instances represent the same passenger.
+                 * 
+                 * @param other The other instance.
+                 **/
                 bool operator ==(const Passenger &other) const { return equals(other); }
 
+                /**
+                 * Determine whether two instances represent different passengers.
+                 * 
+                 * @param other The other instance.
+                 **/
                 bool operator !=(const Passenger &other) const { return !equals(other); }
 
             private:
