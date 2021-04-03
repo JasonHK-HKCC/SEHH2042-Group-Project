@@ -191,6 +191,16 @@ namespace jetassign
                  **/
                 void assign(const SeatLocation &location, const Passenger &passenger);
 
+                /**
+                 * Remove a passenger at the specific seat from the seating plan.
+                 * 
+                 * @param location The location of the seat.
+                 **/
+                void remove(const SeatLocation &location);
+
+                // TODO: Added remove
+                // void remove(const Passenger &passenger);
+
             private:
                 /**
                  * The internal seating plan.
@@ -304,22 +314,92 @@ namespace jetassign
     auto seating_plan = core::SeatingPlan();
 }
 
+/**
+ * R1: Add an assignment
+ **/
+void add_an_assignment();
+
+/**
+ * R2: Delete an assignment
+ **/
+void delete_an_assignment();
+
+/**
+ * R3: Add assignments in batch
+ **/
+void add_assignments_in_batch();
+
+/**
+ * R4: Show latest seating plan
+ **/
+void show_latest_seating_plan();
+
+/**
+ * R5: Show details
+ **/
+void show_details(long selection);
+
 #ifndef _TEST
 int main(int argc, const char* argv[])
 {
-    // jetassign::input::get_passenger_name();
-    // jetassign::input::get_passport_id();
-    // jetassign::input::get_seat_location();
+    long selection;
+    while ((selection = jetassign::input::get_menu_option(6)) != 6)
+    {
+        switch (selection)
+        {
+            case 1:
+                add_an_assignment();
+                break;
+            case 2:
+                delete_an_assignment();
+                break;
+            case 3:
+                add_assignments_in_batch();
+                break;
+            case 4:
+                show_latest_seating_plan();
+                break;
+            case 5:
+            {
+                long details_selection;
+                while ((details_selection = jetassign::input::get_menu_option(3)) != 3)
+                {
+                    show_details(details_selection);
+                }
 
-    jetassign::core::Passenger passenger("J", "H");
-    jetassign::core::SeatLocation location(0, 0);
-
-    jetassign::seating_plan.assign(location, passenger);
-    cout << jetassign::seating_plan.location_of(passenger).value().to_string() << endl;
+                break;
+            }
+        }
+    }
 
     return 0;
 }
 #endif
+
+void add_an_assignment()
+{
+
+}
+
+void delete_an_assignment()
+{
+
+}
+
+void add_assignments_in_batch()
+{
+
+}
+
+void show_latest_seating_plan()
+{
+
+}
+
+void show_details(long selection)
+{
+
+}
 
 namespace jetassign::core
 {
@@ -375,6 +455,15 @@ namespace jetassign::core
         }
 
         seating_plan.at(location.get_row()).at(location.get_column()) = passenger;
+    }
+
+    void SeatingPlan::remove(const SeatLocation &location)
+    {
+        if (this->is_occupied(location))
+        {
+            cout << "DEBUG: this->is_occupied(location) => true" << endl; 
+            seating_plan.at(location.get_row()).at(location.get_row()).reset();
+        }
     }
 
     Passenger::Passenger(const string &name, const string &passport_id)
