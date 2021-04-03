@@ -4,6 +4,7 @@
 #include <iostream>
 #include <limits>
 #include <regex>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -271,6 +272,14 @@ namespace jetassign
 
                 SeatLocation get_location() const { return location; }
 
+                bool equals(const CompactAssignment &other) const;
+
+                bool operator ==(const CompactAssignment &other) const { return equals(other); }
+
+                bool operator !=(const CompactAssignment &other) const { return !equals(other); }
+
+                string to_string() const;
+
             private:
                 Passenger passenger;
                 SeatLocation location;
@@ -409,8 +418,6 @@ namespace jetassign::core
 
     namespace
     {
-        using std::to_string;
-
         const auto kSeatLocationRowRangeErrorMessage = "The range of the row must between 0 (inclusive) and " STRINGIFY_VALUE(JET_ROW_LENGTH) " (exclusive).";
 
         const auto kSeatLocationColumnRangeErrorMessage = "The range of the column must between 0 (inclusive) and " STRINGIFY_VALUE(JET_COLUMN_LENGTH) " (exclusive).";
@@ -642,7 +649,6 @@ namespace jetassign::input
         vector<CompactAssignment> assignments;
         while (true)
         {
-            cout << "Seat Location: ";
             auto input = read_line();
             if (stringutil::trim(input) == "0") { break; }
 
@@ -661,6 +667,16 @@ namespace jetassign::input
 
     CompactAssignment::CompactAssignment(const string &passenger_name, const string &passport_id, const SeatLocation &seat_location)
         : passenger(passenger_name, passport_id), location { seat_location } {};
+
+    bool CompactAssignment::equals(const CompactAssignment &other) const
+    {
+        return ((passenger == other.passenger) && (location == other.location));
+    }
+
+    string CompactAssignment::to_string() const
+    {
+        return (passenger.get_name() + "/" + passenger.get_passport_id() + "/" + location.to_string());
+    }
 
     namespace parsers
     {
