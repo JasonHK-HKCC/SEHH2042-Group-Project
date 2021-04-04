@@ -1,3 +1,9 @@
+#ifdef __unix__
+    #include <termios.h>
+#endif
+
+#include <execinfo.h>
+
 #include <algorithm>
 #include <array>
 #include <iomanip>
@@ -11,8 +17,6 @@
 
 #include <climits>
 
-#include <execinfo.h>
-
 using std::size_t;
 
 // array
@@ -22,6 +26,7 @@ using std::array;
 using std::cin;
 using std::cout;
 using std::endl;
+using std::flush;
 using std::istream;
 
 // optional
@@ -364,6 +369,8 @@ namespace jetassign
                 SeatLocation m_location;
         };
 
+        void wait_for_enter(const string &message = "Press ENTER to continue...");
+
         /**
          * Read the user's input until an EOL character was received.
          **/
@@ -433,6 +440,8 @@ void show_details(long selection);
 int main(int argc, const char* argv[])
 {
     std::set_terminate(handler);
+    
+    jetassign::input::wait_for_enter();
 
     long selection;
     while ((selection = jetassign::input::get_menu_option(6)) != 6)
@@ -488,95 +497,128 @@ void add_assignments_in_batch()
     using jetassign::core::SeatLocation;
     using jetassign::input::AssignmentRequest;
 
-    auto requests = jetassign::input::get_compact_assignments();
-
-    if (requests.size() > 0)
+    const auto print_nothing_committed = []()
     {
-        typedef vector<AssignmentRequest> RequestsVector;
+        cout << "No requests could be committed." << endl;
+        jetassign::input::wait_for_enter();
+    };
 
-        map<SeatLocation, bool> occupation_states;
-        set<AssignmentRequest> already_assigned;
+    auto requests = jetassign::input::get_compact_assignments();
+    cout << endl;
 
-        RequestsVector successful_requests;
+    if (requests.size() == 0)
+    {
+        return print_nothing_committed();
+    }
 
-        RequestsVector unsuccessful_requests_assigned;
-        RequestsVector unsuccessful_requests_occupied;
+    typedef vector<AssignmentRequest> RequestsVector;
 
-        for (auto request : requests)
+    map<SeatLocation, bool, std::equal_to<SeatLocation>> occupation_states;
+    set<AssignmentRequest> already_assigned;
+
+    RequestsVector successful_requests;
+
+    RequestsVector unsuccessful_requests_assigned;
+    RequestsVector unsuccessful_requests_occupied;
+
+    const auto is_occupied = [&](const SeatLocation &location)
+    {
+        return ((!occupation_states.count(location) && seating_plan.is_occupied(location))
+                || occupation_states[location]);
+    };
+
+    for (auto request : requests)
+    {
+        auto location = request.location();
+
+        if (seating_plan.is_assigned(request.passenger()))
         {
-            cout << request.to_string() << endl;
-            if (seating_plan.is_assigned(request.passenger()))
-            {
-                unsuccessful_requests_assigned.push_back(request);
-            }
-            else if (seating_plan.is_occupied(request.location()))
-            {
-                unsuccessful_requests_occupied.push_back(request);
-            }
+            unsuccessful_requests_assigned.push_back(request);
         }
-
-        const auto successful_count = successful_requests.size();
-        const auto unsuccessful_assigned_count = unsuccessful_requests_assigned.size();
-        const auto unsuccessful_occupied_count = unsuccessful_requests_occupied.size();
-
-        if (successful_count > 0)
+        else if (is_occupied(location))
         {
-            cout << "These requests will be committed:" << endl;
-            for (auto request : successful_requests)
+            if (!occupation_states.count(location))
             {
-                cout << "  - " << request.to_string() << endl;
+                occupation_states[location] = true;
             }
+            
+            unsuccessful_requests_occupied.push_back(request);
         }
-
-        if ((unsuccessful_assigned_count > 0) || (unsuccessful_occupied_count > 0))
+        else
         {
-            cout << "These requests will be dropped:" << endl;
-
-            if (unsuccessful_assigned_count > 0)
-            {
-                cout << "  - Already assigned:" << endl;
-                for (auto request : unsuccessful_requests_assigned)
-                {
-                    cout << "    - " << request.to_string() << endl;
-                }
-            }
-
-            if (unsuccessful_occupied_count > 0)
-            {
-                cout << "  - Seat was occupied:" << endl;
-                for (auto request : unsuccessful_requests_occupied)
-                {
-                    cout << "    - " << request.to_string() << endl;
-                }
-            }
-        }
-
-        if (successful_count > 0)
-        {
-            cout << "Are you sure to commit the requests?";
-
-            if (true)
-            {
-                for (auto request : successful_requests)
-                {
-                    if (seating_plan.is_assigned(request.passenger()))
-                    {
-                        seating_plan.remove(request.passenger());
-                    }
-
-                    seating_plan.assign(request.location(), request.passenger());
-                }
-
-                cout << "Done, " << successful_count << " "
-                    << ((successful_count == 1) ? "request was" : "requests were")
-                    << " commited." << endl;
-            }
-
-            return;
+            successful_requests.push_back(request);
         }
     }
 
-    cout << "No requests could be committed." << endl;
+    const auto successful_count = successful_requests.size();
+    const auto unsuccessful_assigned_count = unsuccessful_requests_assigned.size();
+    const auto unsuccessful_occupied_count = unsuccessful_requests_occupied.size();
+
+    if (successful_count > 0)
+    {
+        cout << "These requests will be committed:" << endl;
+        for (auto request : successful_requests)
+        {
+            cout << "  - " << request.to_string() << endl;
+        }
+
+        cout << endl;
+    }
+
+    if ((unsuccessful_assigned_count > 0) || (unsuccessful_occupied_count > 0))
+    {
+        cout << "These requests will be dropped:" << endl;
+
+        if (unsuccessful_assigned_count > 0)
+        {
+            cout << "  - Already assigned:" << endl;
+            for (auto request : unsuccessful_requests_assigned)
+            {
+                cout << "    - " << request.to_string() << endl;
+            }
+        }
+
+        if (unsuccessful_occupied_count > 0)
+        {
+            cout << "  - Seat was occupied:" << endl;
+            for (auto request : unsuccessful_requests_occupied)
+            {
+                cout << "    - " << request.to_string() << endl;
+            }
+        }
+
+        cout << endl;
+    }
+
+    if (successful_count == 0)
+    {
+        return print_nothing_committed();
+    }
+
+    cout << "Are you sure to commit the requests?";
+
+    if (true)
+    {
+        for (auto request : successful_requests)
+        {
+            if (seating_plan.is_assigned(request.passenger()))
+            {
+                seating_plan.remove(request.passenger());
+            }
+
+            seating_plan.assign(request.location(), request.passenger());
+        }
+
+        cout << "Done, " << successful_count << " "
+            << ((successful_count == 1) ? "request was" : "requests were")
+            << " committed." << endl;
+    }
+    else
+    {
+        cout << "Cancelled, no requests were committed." << endl;
+    }
+
+    jetassign::input::wait_for_enter("Press ENTER to return to the main menu...");
 }
 
 void show_latest_seating_plan()
@@ -723,6 +765,12 @@ namespace jetassign::exceptions
 namespace jetassign::input
 {
     using exceptions::InvalidInputError;
+
+    void wait_for_enter(const string &message)
+    {
+        cout << message << flush;
+        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
 
     string read_line()
     {
