@@ -129,12 +129,12 @@ namespace jetassign
                 /**
                  * Returns the name of the passenger.
                  **/
-                string get_name() const { return name; }
+                string name() const { return m_name; }
 
                 /**
                  * Returns the passport ID of the passenger.
                  **/
-                string get_passport_id() const { return passport_id; }
+                string passport_id() const { return m_passport_id; }
 
                 /**
                  * Determine whether two instances represent the same passenger.
@@ -161,12 +161,12 @@ namespace jetassign
                 /**
                  * The name of the passenger.
                  **/
-                string name;
+                string m_name;
 
                 /**
                  * The passport ID of the passenger.
                  **/
-                string passport_id;
+                string m_passport_id;
         };
 
         /**
@@ -190,12 +190,12 @@ namespace jetassign
                 /**
                  * Returns the row location of the seat.
                  **/
-                size_t get_row() const { return row; }
+                size_t row() const { return m_row; }
 
                 /**
                  * Returns the column location of the seat.
                  **/
-                size_t get_column() const { return column; }
+                size_t column() const { return m_column; }
 
                 /**
                  * Determine whether two instances represent the same seat location.
@@ -224,12 +224,12 @@ namespace jetassign
                 /**
                  * The row location of the seat.
                  **/
-                size_t row;
+                size_t m_row;
 
                 /**
                  * The column location of the seat.
                  **/
-                size_t column;
+                size_t m_column;
         };
 
         class SeatingPlan
@@ -597,7 +597,7 @@ namespace jetassign::core
 
     bool SeatingPlan::is_occupied(const SeatLocation &location) const
     {
-        return seating_plan.at(location.get_row()).at(location.get_column()).has_value();
+        return seating_plan.at(location.row()).at(location.column()).has_value();
     }
 
     bool SeatingPlan::is_assigned(const Passenger &passenger) const
@@ -607,7 +607,7 @@ namespace jetassign::core
 
     const optional<Passenger> SeatingPlan::at(const SeatLocation &location) const
     {
-        return seating_plan.at(location.get_row()).at(location.get_column());
+        return seating_plan.at(location.row()).at(location.column());
     }
 
     optional<SeatLocation> SeatingPlan::location_of(const Passenger &passenger) const
@@ -633,14 +633,14 @@ namespace jetassign::core
             throw exceptions::SeatOccupiedError(location);
         }
 
-        seating_plan.at(location.get_row()).at(location.get_column()) = passenger;
+        seating_plan.at(location.row()).at(location.column()) = passenger;
     }
 
     void SeatingPlan::remove(const SeatLocation &location)
     {
         if (this->is_occupied(location))
         {
-            seating_plan.at(location.get_row()).at(location.get_row()).reset();
+            seating_plan.at(location.row()).at(location.row()).reset();
         }
     }
 
@@ -649,16 +649,16 @@ namespace jetassign::core
         if (this->is_assigned(passenger))
         {
             const auto location = this->location_of(passenger).value();
-            seating_plan.at(location.get_row()).at(location.get_row()).reset();
+            seating_plan.at(location.row()).at(location.row()).reset();
         }
     }
 
     Passenger::Passenger(const string &name, const string &passport_id)
-        : name { name }, passport_id { passport_id } {}
+        : m_name { name }, m_passport_id { passport_id } {}
 
     bool Passenger::equals(const Passenger &other) const
     {
-        return ((name == other.name) && (passport_id == other.passport_id));
+        return ((m_name == other.m_name) && (m_passport_id == other.m_passport_id));
     }
 
     #define RANGE_ERROR_MESSAGE(name, max) "The range of the " #name " must between 0 (inclusive) and " STRINGIFY(max) " (exclusive)."
@@ -688,7 +688,7 @@ namespace jetassign::core
     }
 
     SeatLocation::SeatLocation(size_t row, size_t column)
-        : row { row }, column { column }
+        : m_row { row }, m_column { column }
     {
         if (row >= JET_ROW_LENGTH)
         {
@@ -702,12 +702,12 @@ namespace jetassign::core
 
     bool SeatLocation::equals(const SeatLocation &other) const
     {
-        return ((row == other.row) && (column == other.column));
+        return ((m_row == other.m_row) && (m_column == other.m_column));
     }
 
     string SeatLocation::to_string() const
     {
-        return (row_to_string(row) + column_to_string(column));
+        return (row_to_string(m_row) + column_to_string(m_column));
     }
 
     #undef COLUMN_RANGE_ERROR_MESSAGE
@@ -872,7 +872,7 @@ namespace jetassign::input
 
     string CompactAssignment::to_string() const
     {
-        return (m_passenger.get_name() + "/" + m_passenger.get_passport_id() + "/" + m_location.to_string());
+        return (m_passenger.name() + "/" + m_passenger.passport_id() + "/" + m_location.to_string());
     }
 
     namespace parsers
