@@ -10,6 +10,8 @@
 
 #include <climits>
 
+#include <execinfo.h>
+
 using std::size_t;
 
 // array
@@ -37,6 +39,20 @@ using std::vector;
 #define STRINGIFY(expression) #expression
 
 #define STRINGIFY_VALUE(value) STRINGIFY(value)
+
+void handler()
+{
+    void *trace_elems[20];
+    int trace_elem_count(backtrace( trace_elems, 20 ));
+    char **stack_syms(backtrace_symbols( trace_elems, trace_elem_count ));
+    for ( int i = 0 ; i < trace_elem_count ; ++i )
+    {
+        std::cerr << stack_syms[i] << "\n";
+    }
+    free( stack_syms );
+
+    exit(1);
+}
 
 /**
  * Utility functions for std::string.
@@ -405,6 +421,8 @@ void show_details(long selection);
 #ifndef _TEST
 int main(int argc, const char* argv[])
 {
+    std::set_terminate(handler);
+
     long selection;
     while ((selection = jetassign::input::get_menu_option(6)) != 6)
     {
