@@ -704,7 +704,7 @@ namespace jetassign::input
             }
             catch(const InvalidInputError &e)
             {
-                std::cerr << "    Error: " << e.what() << endl;;
+                std::cerr << "    Error: " << e.what() << endl;
             } 
         }
 
