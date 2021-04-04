@@ -267,8 +267,7 @@ namespace jetassign
                  **/
                 void remove(const SeatLocation &location);
 
-                // TODO: Added remove
-                // void remove(const Passenger &passenger);
+                void remove(const Passenger &passenger);
 
             private:
                 /**
@@ -336,12 +335,11 @@ namespace jetassign
             public:
                 CompactAssignment(const string &passenger_name, const string &passport_id, const SeatLocation &seat_location);
 
-                Passenger get_passenger() const { return passenger; }
-
                 Passenger passenger() const { return passenger_; }
 
                 SeatLocation location() const { return location_; }
 
+                bool is_same_passenger(const CompactAssignment &other) const;
 
                 bool equals(const CompactAssignment &other) const;
 
@@ -536,6 +534,15 @@ namespace jetassign::core
     {
         if (this->is_occupied(location))
         {
+            seating_plan.at(location.get_row()).at(location.get_row()).reset();
+        }
+    }
+
+    void SeatingPlan::remove(const Passenger &passenger)
+    {
+        if (this->is_assigned(passenger))
+        {
+            const auto location = this->location_of(passenger).value();
             seating_plan.at(location.get_row()).at(location.get_row()).reset();
         }
     }
@@ -735,6 +742,10 @@ namespace jetassign::input
     CompactAssignment::CompactAssignment(const string &passenger_name, const string &passport_id, const SeatLocation &seat_location)
         : passenger_(passenger_name, passport_id), location_ { seat_location } {};
 
+    bool CompactAssignment::is_same_passenger(const CompactAssignment &other) const
+    {
+        return (passenger_ == other.passenger_);
+    }
 
     bool CompactAssignment::equals(const CompactAssignment &other) const
     {
