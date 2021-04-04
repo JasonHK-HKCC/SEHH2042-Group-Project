@@ -341,11 +341,13 @@ namespace jetassign
         class CompactAssignment
         {
             public:
+                CompactAssignment(const Passenger &passenger, const SeatLocation &location);
+
                 CompactAssignment(const string &passenger_name, const string &passport_id, const SeatLocation &seat_location);
 
-                Passenger passenger() const { return passenger_; }
+                Passenger passenger() const { return m_passenger; }
 
-                SeatLocation location() const { return location_; }
+                SeatLocation location() const { return m_location; }
 
                 bool is_same_passenger(const CompactAssignment &other) const;
 
@@ -358,8 +360,8 @@ namespace jetassign
                 string to_string() const;
 
             private:
-                Passenger passenger_;
-                SeatLocation location_;
+                Passenger m_passenger;
+                SeatLocation m_location;
         };
 
         /**
@@ -490,13 +492,15 @@ void add_assignments_in_batch()
 
     if (requests.size() > 0)
     {
+        typedef vector<CompactAssignment> RequestsVector;
+
         map<SeatLocation, bool> occupation_states;
         set<CompactAssignment> already_assigned;
 
-        vector<CompactAssignment> successful_requests;
+        RequestsVector successful_requests;
 
-        vector<CompactAssignment> unsuccessful_requests_assigned;
-        vector<CompactAssignment> unsuccessful_requests_occupied;
+        RequestsVector unsuccessful_requests_assigned;
+        RequestsVector unsuccessful_requests_occupied;
 
         for (auto request : requests)
         {
@@ -850,22 +854,25 @@ namespace jetassign::input
         return assignments;
     }
 
+    CompactAssignment::CompactAssignment(const Passenger &passenger, const SeatLocation &location)
+        : m_passenger { passenger }, m_location { location } {}
+
     CompactAssignment::CompactAssignment(const string &passenger_name, const string &passport_id, const SeatLocation &seat_location)
-        : passenger_(passenger_name, passport_id), location_ { seat_location } {};
+        : CompactAssignment(Passenger(passenger_name, passport_id), seat_location) {};
 
     bool CompactAssignment::is_same_passenger(const CompactAssignment &other) const
     {
-        return (passenger_ == other.passenger_);
+        return (m_passenger == other.m_passenger);
     }
 
     bool CompactAssignment::equals(const CompactAssignment &other) const
     {
-        return ((passenger_ == other.passenger_) && (location_ == other.location_));
+        return ((m_passenger == other.m_passenger) && (m_location == other.m_location));
     }
 
     string CompactAssignment::to_string() const
     {
-        return (passenger_.get_name() + "/" + passenger_.get_passport_id() + "/" + location_.to_string());
+        return (m_passenger.get_name() + "/" + m_passenger.get_passport_id() + "/" + m_location.to_string());
     }
 
     namespace parsers
