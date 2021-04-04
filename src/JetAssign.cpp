@@ -338,7 +338,10 @@ namespace jetassign
 
                 Passenger get_passenger() const { return passenger; }
 
-                SeatLocation get_location() const { return location; }
+                Passenger passenger() const { return passenger_; }
+
+                SeatLocation location() const { return location_; }
+
 
                 bool equals(const CompactAssignment &other) const;
 
@@ -349,8 +352,8 @@ namespace jetassign
                 string to_string() const;
 
             private:
-                Passenger passenger;
-                SeatLocation location;
+                Passenger passenger_;
+                SeatLocation location_;
         };
 
         /**
@@ -730,16 +733,17 @@ namespace jetassign::input
     }
 
     CompactAssignment::CompactAssignment(const string &passenger_name, const string &passport_id, const SeatLocation &seat_location)
-        : passenger(passenger_name, passport_id), location { seat_location } {};
+        : passenger_(passenger_name, passport_id), location_ { seat_location } {};
+
 
     bool CompactAssignment::equals(const CompactAssignment &other) const
     {
-        return ((passenger == other.passenger) && (location == other.location));
+        return ((passenger_ == other.passenger_) && (location_ == other.location_));
     }
 
     string CompactAssignment::to_string() const
     {
-        return (passenger.get_name() + "/" + passenger.get_passport_id() + "/" + location.to_string());
+        return (passenger_.get_name() + "/" + passenger_.get_passport_id() + "/" + location_.to_string());
     }
 
     namespace parsers
