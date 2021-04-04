@@ -338,24 +338,24 @@ namespace jetassign
         using core::Passenger;
         using core::SeatLocation;
 
-        class CompactAssignment
+        class AssignmentRequest
         {
             public:
-                CompactAssignment(const Passenger &passenger, const SeatLocation &location);
+                AssignmentRequest(const Passenger &passenger, const SeatLocation &location);
 
-                CompactAssignment(const string &passenger_name, const string &passport_id, const SeatLocation &seat_location);
+                AssignmentRequest(const string &passenger_name, const string &passport_id, const SeatLocation &seat_location);
 
                 Passenger passenger() const { return m_passenger; }
 
                 SeatLocation location() const { return m_location; }
 
-                bool is_same_passenger(const CompactAssignment &other) const;
+                bool is_same_passenger(const AssignmentRequest &other) const;
 
-                bool equals(const CompactAssignment &other) const;
+                bool equals(const AssignmentRequest &other) const;
 
-                bool operator ==(const CompactAssignment &other) const { return equals(other); }
+                bool operator ==(const AssignmentRequest &other) const { return equals(other); }
 
-                bool operator !=(const CompactAssignment &other) const { return !equals(other); }
+                bool operator !=(const AssignmentRequest &other) const { return !equals(other); }
 
                 string to_string() const;
 
@@ -381,7 +381,7 @@ namespace jetassign
 
         SeatLocation get_seat_location();
 
-        vector<CompactAssignment> get_compact_assignments();
+        vector<AssignmentRequest> get_compact_assignments();
 
         /**
          * The input parsers component.
@@ -397,7 +397,7 @@ namespace jetassign
 
             SeatLocation parse_seat_location(const string &input);
 
-            CompactAssignment parse_compact_assignment(const string &input);
+            AssignmentRequest parse_compact_assignment(const string &input);
         }
     }
 
@@ -486,16 +486,16 @@ void add_assignments_in_batch()
 
     using jetassign::seating_plan;
     using jetassign::core::SeatLocation;
-    using jetassign::input::CompactAssignment;
+    using jetassign::input::AssignmentRequest;
 
     auto requests = jetassign::input::get_compact_assignments();
 
     if (requests.size() > 0)
     {
-        typedef vector<CompactAssignment> RequestsVector;
+        typedef vector<AssignmentRequest> RequestsVector;
 
         map<SeatLocation, bool> occupation_states;
-        set<CompactAssignment> already_assigned;
+        set<AssignmentRequest> already_assigned;
 
         RequestsVector successful_requests;
 
@@ -824,9 +824,9 @@ namespace jetassign::input
         }
     }
 
-    vector<CompactAssignment> get_compact_assignments()
+    vector<AssignmentRequest> get_compact_assignments()
     {
-        vector<CompactAssignment> assignments;
+        vector<AssignmentRequest> requests;
         while (true)
         {
             cout << "> ";
@@ -835,15 +835,15 @@ namespace jetassign::input
 
             try
             {
-                auto assignment = parsers::parse_compact_assignment(input);
-                assignments.erase(
+                auto request = parsers::parse_compact_assignment(input);
+                requests.erase(
                     std::remove_if(
-                        assignments.begin(),
-                        assignments.end(),
-                        [&](const CompactAssignment &other) { return assignment.is_same_passenger(other); }),
-                    assignments.end());
+                        requests.begin(),
+                        requests.end(),
+                        [&](const AssignmentRequest &element) { return element.is_same_passenger(request); }),
+                    requests.end());
 
-                assignments.push_back(parsers::parse_compact_assignment(input));
+                requests.push_back(parsers::parse_compact_assignment(input));
             }
             catch(const InvalidInputError &e)
             {
@@ -851,26 +851,26 @@ namespace jetassign::input
             } 
         }
 
-        return assignments;
+        return requests;
     }
 
-    CompactAssignment::CompactAssignment(const Passenger &passenger, const SeatLocation &location)
+    AssignmentRequest::AssignmentRequest(const Passenger &passenger, const SeatLocation &location)
         : m_passenger { passenger }, m_location { location } {}
 
-    CompactAssignment::CompactAssignment(const string &passenger_name, const string &passport_id, const SeatLocation &seat_location)
-        : CompactAssignment(Passenger(passenger_name, passport_id), seat_location) {};
+    AssignmentRequest::AssignmentRequest(const string &passenger_name, const string &passport_id, const SeatLocation &seat_location)
+        : AssignmentRequest(Passenger(passenger_name, passport_id), seat_location) {};
 
-    bool CompactAssignment::is_same_passenger(const CompactAssignment &other) const
+    bool AssignmentRequest::is_same_passenger(const AssignmentRequest &other) const
     {
         return (m_passenger == other.m_passenger);
     }
 
-    bool CompactAssignment::equals(const CompactAssignment &other) const
+    bool AssignmentRequest::equals(const AssignmentRequest &other) const
     {
         return ((m_passenger == other.m_passenger) && (m_location == other.m_location));
     }
 
-    string CompactAssignment::to_string() const
+    string AssignmentRequest::to_string() const
     {
         return (m_passenger.name() + "/" + m_passenger.passport_id() + "/" + m_location.to_string());
     }
@@ -959,7 +959,7 @@ namespace jetassign::input
             return SeatLocation(row, column);
         }
 
-        CompactAssignment parse_compact_assignment(const string &input)
+        AssignmentRequest parse_compact_assignment(const string &input)
         {
             const auto input_segments = stringutil::split(stringutil::trim(input), kCompactAssignmentSeparator);
             if (input_segments.size() != 3)
@@ -971,7 +971,7 @@ namespace jetassign::input
             auto passport_id = parse_passport_id(input_segments.at(1));
             auto seat_location = parse_seat_location(input_segments.at(2));
 
-            return CompactAssignment(passenger_name, passport_id, seat_location);
+            return AssignmentRequest(passenger_name, passport_id, seat_location);
         }
     }
 }
