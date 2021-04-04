@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <map>
 #include <regex>
 #include <set>
 #include <string>
@@ -29,9 +30,6 @@ using std::optional;
 // string
 using std::string;
 
-// vector
-using std::vector;
-
 #define JET_ROW_LENGTH 13
 
 #define JET_COLUMN_LENGTH 6
@@ -54,11 +52,19 @@ void handler()
     exit(1);
 }
 
+namespace numericutil
+{
+    template<typename T, typename std::enable_if<std::is_arithmetic<T>::value>::type* = nullptr>
+    bool is_even(const T &value);
+}
+
 /**
  * Utility functions for std::string.
  **/
 namespace stringutil
 {
+    using std::vector;
+
     /**
      * Removes the leading and trailing whitespaces of a string.
      * 
@@ -327,6 +333,8 @@ namespace jetassign
      **/
     namespace input
     {
+        using std::vector;
+
         using core::Passenger;
         using core::SeatLocation;
 
@@ -470,7 +478,101 @@ void delete_an_assignment()
 
 void add_assignments_in_batch()
 {
+    using std::map;
+    using std::set;
+    using std::vector;
 
+    using jetassign::seating_plan;
+    using jetassign::core::SeatLocation;
+    using jetassign::input::CompactAssignment;
+
+    auto requests = jetassign::input::get_compact_assignments();
+
+    if (requests.size() > 0)
+    {
+        map<SeatLocation, bool> occupation_states;
+        set<CompactAssignment> already_assigned;
+
+        vector<CompactAssignment> successful_requests;
+
+        vector<CompactAssignment> unsuccessful_requests_assigned;
+        vector<CompactAssignment> unsuccessful_requests_occupied;
+
+        for (auto request : requests)
+        {
+            cout << request.to_string() << endl;
+            if (seating_plan.is_assigned(request.passenger()))
+            {
+                unsuccessful_requests_assigned.push_back(request);
+            }
+            else if (seating_plan.is_occupied(request.location()))
+            {
+                unsuccessful_requests_occupied.push_back(request);
+            }
+        }
+
+        const auto successful_count = successful_requests.size();
+        const auto unsuccessful_assigned_count = unsuccessful_requests_assigned.size();
+        const auto unsuccessful_occupied_count = unsuccessful_requests_occupied.size();
+
+        if (successful_count > 0)
+        {
+            cout << "These requests will be committed:" << endl;
+            for (auto request : successful_requests)
+            {
+                cout << "  - " << request.to_string() << endl;
+            }
+        }
+
+        if ((unsuccessful_assigned_count > 0) || (unsuccessful_occupied_count > 0))
+        {
+            cout << "These requests will be dropped:" << endl;
+
+            if (unsuccessful_assigned_count > 0)
+            {
+                cout << "  - Already assigned:" << endl;
+                for (auto request : unsuccessful_requests_assigned)
+                {
+                    cout << "    - " << request.to_string() << endl;
+                }
+            }
+
+            if (unsuccessful_occupied_count > 0)
+            {
+                cout << "  - Seat was occupied:" << endl;
+                for (auto request : unsuccessful_requests_occupied)
+                {
+                    cout << "    - " << request.to_string() << endl;
+                }
+            }
+        }
+
+        if (successful_count > 0)
+        {
+            cout << "Are you sure to commit the requests?";
+
+            if (true)
+            {
+                for (auto request : successful_requests)
+                {
+                    if (seating_plan.is_assigned(request.passenger()))
+                    {
+                        seating_plan.remove(request.passenger());
+                    }
+
+                    seating_plan.assign(request.location(), request.passenger());
+                }
+
+                cout << "Done, " << successful_count << " "
+                    << ((successful_count == 1) ? "request was" : "requests were")
+                    << " commited." << endl;
+            }
+
+            return;
+        }
+    }
+
+    cout << "No requests could be committed." << endl;
 }
 
 void show_latest_seating_plan()
@@ -723,11 +825,20 @@ namespace jetassign::input
         vector<CompactAssignment> assignments;
         while (true)
         {
+            cout << "> ";
             auto input = read_line();
             if (stringutil::trim(input) == "0") { break; }
 
             try
             {
+                auto assignment = parsers::parse_compact_assignment(input);
+                assignments.erase(
+                    std::remove_if(
+                        assignments.begin(),
+                        assignments.end(),
+                        [&](const CompactAssignment &other) { return assignment.is_same_passenger(other); }),
+                    assignments.end());
+
                 assignments.push_back(parsers::parse_compact_assignment(input));
             }
             catch(const InvalidInputError &e)
@@ -855,6 +966,15 @@ namespace jetassign::input
 
             return CompactAssignment(passenger_name, passport_id, seat_location);
         }
+    }
+}
+
+namespace numericutil
+{
+    template<typename T, typename std::enable_if<std::is_arithmetic<T>::value>::type* = nullptr>
+    bool is_even(const T &value)
+    {
+        return ((value % 2) == 0);
     }
 }
 

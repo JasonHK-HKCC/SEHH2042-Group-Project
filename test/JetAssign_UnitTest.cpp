@@ -4,6 +4,8 @@
 
 namespace
 {
+    using std::vector;
+    
     using std::make_tuple;
 
     namespace Matchers = Catch::Matchers;
