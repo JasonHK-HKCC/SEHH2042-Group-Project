@@ -553,40 +553,39 @@ void add_assignments_in_batch()
     const auto unsuccessful_assigned_count = unsuccessful_requests_assigned.size();
     const auto unsuccessful_occupied_count = unsuccessful_requests_occupied.size();
 
+    const auto print_requests_list = [](const RequestsVector& requests)
+    {
+        for (auto request : requests)
+        {
+            cout << "- " << request.to_string() << "\n";
+        }
+    };
+
     if (successful_count > 0)
     {
-        cout << "These requests will be committed:" << endl;
-        for (auto request : successful_requests)
-        {
-            cout << "  - " << request.to_string() << endl;
-        }
+        cout << "These requests will be committed:\n";
+        print_requests_list(successful_requests);
 
-        cout << endl;
+        cout << "\n";
     }
 
     if ((unsuccessful_assigned_count > 0) || (unsuccessful_occupied_count > 0))
     {
-        cout << "These requests will be dropped:" << endl;
+        cout << "These requests will be dropped:\n";
 
         if (unsuccessful_assigned_count > 0)
         {
-            cout << "  - Already assigned:" << endl;
-            for (auto request : unsuccessful_requests_assigned)
-            {
-                cout << "    - " << request.to_string() << endl;
-            }
+            cout << "- Already assigned:\n";
+            print_requests_list(unsuccessful_requests_assigned);
         }
 
         if (unsuccessful_occupied_count > 0)
         {
-            cout << "  - Seat was occupied:" << endl;
-            for (auto request : unsuccessful_requests_occupied)
-            {
-                cout << "    - " << request.to_string() << endl;
-            }
+            cout << "- Seat was occupied:\n";
+            print_requests_list(unsuccessful_requests_occupied);
         }
 
-        cout << endl;
+        cout << "\n";
     }
 
     if (successful_count == 0)
@@ -594,7 +593,7 @@ void add_assignments_in_batch()
         return print_nothing_committed();
     }
 
-    cout << "Are you sure to commit the requests?";
+    cout << "Are you sure to commit the requests?" << flush;
 
     if (true)
     {
@@ -608,13 +607,11 @@ void add_assignments_in_batch()
             seating_plan.assign(request.location(), request.passenger());
         }
 
-        cout << "Done, " << successful_count << " "
-            << ((successful_count == 1) ? "request was" : "requests were")
-            << " committed." << endl;
+        cout << "Done, " << successful_count << " " << ((successful_count == 1) ? "request was" : "requests were") << " committed.\n";
     }
     else
     {
-        cout << "Cancelled, no requests were committed." << endl;
+        cout << "Cancelled, no requests were committed.\n";
     }
 
     jetassign::input::wait_for_enter("Press ENTER to return to the main menu...");
