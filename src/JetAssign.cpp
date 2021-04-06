@@ -72,35 +72,35 @@ namespace stringutil
 
     /**
      * Removes the leading and trailing whitespaces of a string.
-     * 
+     *
      * @param input The string to be trimmed.
      **/
     string trim(const string &input);
 
     /**
      * Removes the leading whitespaces of a string.
-     * 
+     *
      * @param input The string to be trimmed.
      **/
     string trim_start(const string &input);
 
     /**
      * Removes the trailing whitespaces of a string.
-     * 
+     *
      * @param input The string to be trimmed.
      **/
     string trim_end(const string &input);
 
     /**
      * Converts the string into uppercased.
-     * 
+     *
      * @param input The string to be converted.
      **/
     string to_uppercase(string input);
 
     /**
      * Splits the string into multiple segments by the given separator.
-     * 
+     *
      * @param input     The string to be split.
      * @param separator The separator to split the string.
      **/
@@ -125,7 +125,7 @@ namespace jetassign
             public:
                 /**
                  * Initialize a passenger with its information.
-                 * 
+                 *
                  * @param name        The name of the passenger.
                  * @param passport_id The passport ID of the passenger.
                  **/
@@ -143,14 +143,14 @@ namespace jetassign
 
                 /**
                  * Determine whether two instances represent the same passenger.
-                 * 
+                 *
                  * @param other The other instance.
                  **/
                 bool equals(const Passenger &other) const;
 
                 /**
                  * Determine whether two instances represent the same passenger.
-                 * 
+                 *
                  * @param other The other instance.
                  **/
                 bool operator ==(const Passenger &other) const { return equals(other); }
@@ -186,7 +186,7 @@ namespace jetassign
 
                 /**
                  * Initialize a seat location with its position.
-                 * 
+                 *
                  * @param row    The row location of the seat.
                  * @param column The column location of the seat.
                  **/
@@ -204,21 +204,21 @@ namespace jetassign
 
                 /**
                  * Determine whether two instances represent the same seat location.
-                 * 
+                 *
                  * @param other The other instance.
                  **/
                 bool equals(const SeatLocation &other) const;
 
                 /**
                  * Determine whether two instances represent the same seat location.
-                 * 
+                 *
                  * @param other The other instance.
                  **/
                 bool operator ==(const SeatLocation &other) const { return equals(other); }
 
                 /**
                  * Determine whether two instances represent different seat location.
-                 * 
+                 *
                  * @param other The other instance.
                  **/
                 bool operator !=(const SeatLocation &other) const { return !equals(other); }
@@ -244,7 +244,7 @@ namespace jetassign
 
                 /**
                  * Determine whether the seat was already occupied by a passenger.
-                 * 
+                 *
                  * @param location The location of the seat.
                  **/
                 bool is_occupied(const SeatLocation &location) const;
@@ -256,7 +256,7 @@ namespace jetassign
 
                 /**
                  * Returns the passenger who was assigned to the given seat.
-                 * 
+                 *
                  * @param location The location of the seat.
                  **/
                 const optional<Passenger> at(const SeatLocation &location) const;
@@ -265,7 +265,7 @@ namespace jetassign
 
                 /**
                  * Assign a passenger to a specific seat.
-                 * 
+                 *
                  * @param location  The location of the seat.
                  * @param passenger The passenger to be assigned.
                  **/
@@ -273,7 +273,7 @@ namespace jetassign
 
                 /**
                  * Remove a passenger at the specific seat from the seating plan.
-                 * 
+                 *
                  * @param location The location of the seat.
                  **/
                 void remove(const SeatLocation &location);
@@ -440,7 +440,7 @@ void show_details(long selection);
 int main(int argc, const char* argv[])
 {
     std::set_terminate(handler);
-    
+
     jetassign::input::wait_for_enter();
 
     long selection;
@@ -514,7 +514,6 @@ void add_assignments_in_batch()
     typedef vector<AssignmentRequest> RequestsVector;
 
     map<SeatLocation, bool, std::equal_to<SeatLocation>> occupation_states;
-    set<AssignmentRequest> already_assigned;
 
     RequestsVector successful_requests;
 
@@ -541,7 +540,7 @@ void add_assignments_in_batch()
             {
                 occupation_states[location] = true;
             }
-            
+
             unsuccessful_requests_occupied.push_back(request);
         }
         else
@@ -806,7 +805,7 @@ namespace jetassign::input
             catch(const InvalidInputError &e)
             {
                 std::cerr << "    Error: " << e.what() << endl;;
-            }  
+            }
         }
     }
 
@@ -824,7 +823,7 @@ namespace jetassign::input
             catch(const InvalidInputError &e)
             {
                 std::cerr << "    Error: " << e.what() << endl;;
-            }  
+            }
         }
     }
 
@@ -842,7 +841,7 @@ namespace jetassign::input
             catch(const InvalidInputError &e)
             {
                 std::cerr << "    Error: " << e.what() << endl;;
-            } 
+            }
         }
     }
 
@@ -868,7 +867,7 @@ namespace jetassign::input
             catch(const InvalidInputError &e)
             {
                 std::cerr << "    Error: " << e.what() << endl;;
-            } 
+            }
         }
     }
 
@@ -896,7 +895,7 @@ namespace jetassign::input
             catch(const InvalidInputError &e)
             {
                 std::cerr << "    Error: " << e.what() << endl;
-            } 
+            }
         }
 
         return requests;
@@ -1003,7 +1002,7 @@ namespace jetassign::input
 
             auto row = std::stoi(match_result.str(1)) - 1;
             auto column = match_result.str(2).at(0) - 'A';
-            
+
             return SeatLocation(row, column);
         }
 
