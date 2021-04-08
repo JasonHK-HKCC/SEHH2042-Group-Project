@@ -380,6 +380,10 @@ namespace jetassign
          **/
         string read_line();
 
+        bool get_confirmation(const string& message);
+
+        bool get_confirmation(const string& message, bool default_value);
+
         long get_menu_option(long max);
 
         long get_menu_option(long min, long max);
@@ -399,6 +403,9 @@ namespace jetassign
          **/
         namespace parsers
         {
+            bool parse_confirmation(const string &input);
+
+            bool parse_confirmation(const string &input, bool default_value);
 
             long parse_menu_option(const string &input);
 
@@ -786,6 +793,42 @@ namespace jetassign::input
         return line;
     }
 
+    bool get_confirmation(const string& message)
+    {
+        while (true)
+        {
+            cout << message << " [y/n] " << flush;
+            auto input = read_line();
+
+            try
+            {
+                return parsers::parse_confirmation(input);
+            }
+            catch(const InvalidInputError& e)
+            {
+                std::cerr << e.what() << '\n';
+            }
+        }
+    }
+
+    bool get_confirmation(const string& message, bool default_value)
+    {
+        while (true)
+        {
+            cout << message << " [" << (default_value ? "Y/n" : "y/N") << "] " << flush;
+            auto input = read_line();
+
+            try
+            {
+                return parsers::parse_confirmation(input, default_value);
+            }
+            catch(const InvalidInputError& e)
+            {
+                std::cerr << e.what() << '\n';
+            }
+        }
+    }
+
     long get_menu_option(long max)
     {
         return get_menu_option(1, max);
@@ -948,6 +991,41 @@ namespace jetassign::input
             const regex kSeatLocationPattern("(1[0-3]|[1-9])([A-F])");
 
             const auto kCompactAssignmentSeparator = "/";
+        }
+
+        bool parse_confirmation(const string &input)
+        {
+            const auto confirmation = stringutil::trim(input);
+            if (confirmation.empty())
+            {
+                throw EmptyInputError("Please enter a command.");
+            }
+
+            switch (confirmation.at(0))
+            {
+                case 'Y':
+                case 'y':
+                    return true;
+
+                case 'N':
+                case 'n':
+                    return false;
+
+                default:
+                    throw MalformedInputError("Invalid response. Please enter a correct command.");
+            }
+        }
+
+        bool parse_confirmation(const string &input, bool default_value)
+        {
+            try
+            {
+                return parse_confirmation(input);
+            }
+            catch (const EmptyInputError& e)
+            {
+                return default_value;
+            }
         }
 
         long parse_menu_option(const string &input)
