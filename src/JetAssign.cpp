@@ -690,8 +690,8 @@ namespace jetassign::core
     {
         if (this->is_assigned(passenger))
         {
-            const auto location = this->location_of(passenger).value();
-            seating_plan.at(location.row()).at(location.row()).reset();
+            const auto location = *(this->location_of(passenger));
+            seating_plan.at(location.row()).at(location.column()) = std::nullopt;
         }
     }
 
