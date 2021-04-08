@@ -225,6 +225,10 @@ namespace jetassign
 
                 string to_string() const;
 
+                operator string() const { return to_string(); }
+
+                friend std::ostream& operator<<(std::ostream& os, const SeatLocation& location);
+
             private:
                 /**
                  * The row location of the seat.
@@ -746,6 +750,12 @@ namespace jetassign::core
     string SeatLocation::to_string() const
     {
         return (row_to_string(m_row) + column_to_string(m_column));
+    }
+
+    std::ostream& operator<<(std::ostream& os, const SeatLocation& location)
+    {
+        os << location.to_string();
+        return os;
     }
 
     #undef COLUMN_RANGE_ERROR_MESSAGE
