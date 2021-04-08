@@ -639,12 +639,12 @@ namespace jetassign::core
 
     bool SeatingPlan::is_occupied(const SeatLocation &location) const
     {
-        return seating_plan.at(location.row()).at(location.column()).has_value();
+        return ((bool) seating_plan.at(location.row()).at(location.column()));
     }
 
     bool SeatingPlan::is_assigned(const Passenger &passenger) const
     {
-        return this->location_of(passenger).has_value();
+        return ((bool) this->location_of(passenger));
     }
 
     const optional<Passenger> SeatingPlan::at(const SeatLocation &location) const
@@ -682,7 +682,7 @@ namespace jetassign::core
     {
         if (this->is_occupied(location))
         {
-            seating_plan.at(location.row()).at(location.row()).reset();
+            seating_plan.at(location.row()).at(location.column()) = std::nullopt;
         }
     }
 
