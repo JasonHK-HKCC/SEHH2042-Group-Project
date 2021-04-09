@@ -682,9 +682,28 @@ void add_assignments_in_batch()
     jetassign::input::wait_for_enter("Press ENTER to return to the main menu...");
 }
 
+
 void show_latest_seating_plan()
 {
+	//display the top row (A-F)
+	cout << left << setw(5) << " ";
+	for (char col = 'A'; col <= 'F'; col++)
+		cout << setw(3) << col;
+	cout << endl;
 
+	//display status
+	for (int R = 0; R < row; R++) {
+		cout << left << setw(5) << R + 1;
+
+		for (int C = 0; C < column; C++) {
+			cout << setw(3);
+			if (jetassign::seating_plan.is_occupied(R, C))
+				cout << "X";
+			else
+				cout << "*";
+		}
+		cout << endl;
+	}
 }
 
 void show_details(long selection)
