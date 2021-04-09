@@ -662,7 +662,14 @@ void show_latest_seating_plan()
 
 void show_details(long selection)
 {
-
+    if (selection == 1)
+    {
+        // Passenger
+    }
+    else
+    {
+        // Class
+    }
 }
 
 namespace jetassign::core
