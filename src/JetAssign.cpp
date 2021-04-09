@@ -703,23 +703,11 @@ void show_details(long selection)
     if (selection == 1)
     {
         // Passenger
-        jetassign::ui::get_passenger_id();
-        if ( seat location > 0 && seat location <3)
-        {
-            std::cout << "First Class" << endl;
-        }
-        else if (seat location > 2 && seat location < 8)
-        {
-            std::cout << "Business Class" << endl;
-        }
-        else if (seat location > 7 && seat location < 14)
-        {
-            std::cout << "Economy Class" << endl;
+        jetassign::ui::get_passenger_id()
     }
     else
     {
         // Class
-        
     }
 }
 
