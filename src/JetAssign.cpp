@@ -712,7 +712,7 @@ void show_details(long selection)
         // Passenger
         auto name = jetassign::input::get_passport_id();
         auto location = jetassign::input::get_seat_location();
-        std::cout << name << location ;
+        cout << name << location ;
         if ((location.row() >= 0) && (location.row() <= 1))
         {
             cout << " First class" << endl;
