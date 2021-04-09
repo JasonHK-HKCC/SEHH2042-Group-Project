@@ -526,7 +526,7 @@ void delete_an_assignment()
         }
         else
         {
-            cout << "The passenger data is INCORRECT! " << endl;
+            cout << "No such passenger exist!" << endl;
             
             if (get_confirmation("You want to re-enter data?"))
                 cout << "You choose to re-enter data again." << endl;
