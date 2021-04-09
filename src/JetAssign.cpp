@@ -665,6 +665,7 @@ void show_details(long selection)
     if (selection == 1)
     {
         // Passenger
+        jetassign::ui::get_passenger_id()
     }
     else
     {
