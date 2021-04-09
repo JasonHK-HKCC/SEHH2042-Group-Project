@@ -662,7 +662,25 @@ void show_latest_seating_plan()
 
 void show_details(long selection)
 {
+    std::cout << "*** Details ***" << endl;
+    std::cout << "[1] Passenger" << endl;
+    std::cout << "[2] Class" << endl;
+    std::cout << "[3] Back" << endl;
+    std::cout << "*****************" << endl;
+    std::cout << "Option (1-3): ";
+    std::cin >> Option;
 
+    switch (Option) {
+    case '1': std::cout << "Please enter the passport ID: " << endl;
+              jetassign::ui::get_passport_id();
+              jetassign::ui::get_seat_localtion();
+              break;
+    case '2': std::cout << "Please enter the class type";
+              std::cin >> classtype;
+              std::cout << list << endl;
+              break;
+    case '3': break;
+    }
 }
 
 namespace jetassign::core
