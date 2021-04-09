@@ -494,7 +494,7 @@ void add_an_assignment()
 
 void delete_an_assignment()
 {
-  string confirm, choice;
+    string confirm, choice;
 
     while (true);
     auto passenger = jetassign::input::get_passenger();
