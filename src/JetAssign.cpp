@@ -257,6 +257,8 @@ namespace jetassign
                  **/
                 const optional<Passenger> at(const SeatLocation &location) const;
 
+                const optional<Passenger> at(size_t row, size_t column) const;
+
                 optional<SeatLocation> location_of(const Passenger &passenger) const;
 
                 /**
@@ -745,7 +747,12 @@ namespace jetassign::core
 
     const optional<Passenger> SeatingPlan::at(const SeatLocation &location) const
     {
-        return seating_plan.at(location.row()).at(location.column());
+        return this->at(location.row(), location.column());
+    }
+
+    const optional<Passenger> SeatingPlan::at(size_t row, size_t column) const
+    {
+        return seating_plan.at(row).at(column);
     }
 
     optional<SeatLocation> SeatingPlan::location_of(const Passenger &passenger) const
