@@ -43,20 +43,6 @@ using std::string;
 
 #define STRINGIFY_VALUE(value) STRINGIFY(value)
 
-void handler()
-{
-    void *trace_elems[20];
-    int trace_elem_count(backtrace( trace_elems, 20 ));
-    char **stack_syms(backtrace_symbols( trace_elems, trace_elem_count ));
-    for ( int i = 0 ; i < trace_elem_count ; ++i )
-    {
-        std::cerr << stack_syms[i] << "\n";
-    }
-    free( stack_syms );
-
-    exit(1);
-}
-
 namespace numericutil
 {
     template<typename T, typename std::enable_if<std::is_arithmetic<T>::value>::type* = nullptr>
@@ -180,6 +166,10 @@ namespace jetassign
         class SeatLocation
         {
             public:
+                typedef Passenger value_type;
+                typedef value_type& reference;
+                typedef const value_type& const_reference;
+
                 static string row_to_string(size_t row);
 
                 static string column_to_string(size_t column);
@@ -252,6 +242,8 @@ namespace jetassign
                  * @param location The location of the seat.
                  **/
                 bool is_occupied(const SeatLocation &location) const;
+
+                bool is_occupied(size_t row, size_t column) const;
 
                 /**
                  * Determine whether a seat was already assigned to the passenger.
@@ -543,7 +535,7 @@ void add_assignments_in_batch()
     RequestsVector unsuccessful_requests_assigned;
     RequestsVector unsuccessful_requests_occupied;
 
-    auto is_occupied = [&occupation_states](const SeatLocation &location)
+    const auto is_occupied = [&](const SeatLocation &location)
     {
         return occupation_states.count(location)
             ? occupation_states[location]
@@ -680,7 +672,12 @@ namespace jetassign::core
 
     bool SeatingPlan::is_occupied(const SeatLocation &location) const
     {
-        return ((bool) seating_plan.at(location.row()).at(location.column()));
+        return this->is_occupied(location.row(), location.column());
+    }
+
+    bool SeatingPlan::is_occupied(size_t row, size_t column) const
+    {
+        return ((bool) seating_plan.at(row).at(column));
     }
 
     bool SeatingPlan::is_assigned(const Passenger &passenger) const
