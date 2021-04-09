@@ -710,7 +710,23 @@ void show_details(long selection)
     if (selection == 1)
     {
         // Passenger
-        jetassign::input::get_passport_id();
+        auto name = jetassign::input::get_passport_id();
+        auto location = jetassign::input::get_seat_location();
+        std::cout << name << location ;
+        if ((location.row() >= 0) && (location.row() <= 1))
+        {
+            cout << " First class" << endl;
+        }
+        else if ((location.row() >= 2) && (location.row() <= 8))
+        {
+            cout << "Business class" << endl;
+        }
+        else if ((location.row() >= 7) && (location.row() <= 14))
+        {
+            cout << "Economy class" << endl;
+        }
+        
+        
     }
     else
     {
