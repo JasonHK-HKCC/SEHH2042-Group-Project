@@ -502,7 +502,34 @@ void add_an_assignment()
 
 void delete_an_assignment()
 {
+  string confirm, choice;
 
+    while (true);
+    auto passenger = jetassign::input::get_passenger();
+    if (jetassign::seating_plan.is_assigned(passenger))
+    {
+        auto location = jetassign::seating_plan.location_of(passenger);
+        cout << "COMFIRM!You are going to delete the assignment!(Y/N)" << endl;
+        cin >> confirm;
+        if (confirm == "Y")
+        {
+            jetassign::seating_plan.remove(location.value());
+        }
+        else
+        {
+            jetassign::input::wait_for_enter("Press ENTER to return to the main menu...");
+        }
+        
+    }
+    else
+    {
+        cout << "You want to re-enter data or Quit?(re/quit)" << endl;
+        cin >> choice;
+        if (choice == "re")
+            cout << "You choose too re-enter data again." << endl;
+        else
+           jetassign::input::wait_for_enter("Press ENTER to return to the main menu...");
+    }
 }
 
 void add_assignments_in_batch()
