@@ -143,7 +143,7 @@ namespace jetassign
 
                 /**
                  * Determine whether two instances represent different passengers.
-                 * 
+                 *
                  * @param other The other instance.
                  **/
                 bool operator !=(const Passenger &other) const { return !equals(other); }
@@ -493,7 +493,7 @@ void add_an_assignment()
 }
 
 void delete_an_assignment()
-{   
+{
     using jetassign::input::wait_for_enter;
     using jetassign::input::get_confirmation;
     using jetassign::input::get_passenger;
@@ -527,7 +527,7 @@ void delete_an_assignment()
         else
         {
             cout << "No such passenger exist!" << endl;
-            
+
             if (get_confirmation("You want to re-enter data?"))
                 cout << "You choose to re-enter data again." << endl;
             else
@@ -685,7 +685,6 @@ void add_assignments_in_batch()
 
     jetassign::input::wait_for_enter("Press ENTER to return to the main menu...");
 }
-
 
 void show_latest_seating_plan()
 {
