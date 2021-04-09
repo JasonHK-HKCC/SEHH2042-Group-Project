@@ -43,6 +43,20 @@ using std::string;
 
 #define STRINGIFY_VALUE(value) STRINGIFY(value)
 
+void handler()
+{
+    void *trace_elems[20];
+    int trace_elem_count(backtrace( trace_elems, 20 ));
+    char **stack_syms(backtrace_symbols( trace_elems, trace_elem_count ));
+    for ( int i = 0 ; i < trace_elem_count ; ++i )
+    {
+        std::cerr << stack_syms[i] << "\n";
+    }
+    free( stack_syms );
+
+    exit(1);
+}
+
 namespace numericutil
 {
     template<typename T, typename std::enable_if<std::is_arithmetic<T>::value>::type* = nullptr>
@@ -166,10 +180,6 @@ namespace jetassign
         class SeatLocation
         {
             public:
-                typedef Passenger value_type;
-                typedef value_type& reference;
-                typedef const value_type& const_reference;
-
                 static string row_to_string(size_t row);
 
                 static string column_to_string(size_t column);
@@ -242,8 +252,6 @@ namespace jetassign
                  * @param location The location of the seat.
                  **/
                 bool is_occupied(const SeatLocation &location) const;
-
-                bool is_occupied(size_t row, size_t column) const;
 
                 /**
                  * Determine whether a seat was already assigned to the passenger.
@@ -494,34 +502,7 @@ void add_an_assignment()
 
 void delete_an_assignment()
 {
-  string confirm, choice;
 
-    while (true);
-    auto passenger = jetassign::input::get_passenger();
-    if (jetassign::seating_plan.is_assigned(passenger))
-    {
-        auto location = jetassign::seating_plan.location_of(passenger);
-        cout << "COMFIRM!You are going to delete the assignment!(Y/N)" << endl;
-        cin >> confirm;
-        if (confirm == "Y")
-        {
-            jetassign::seating_plan.remove(location.value());
-        }
-        else
-        {
-            jetassign::input::wait_for_enter("Press ENTER to return to the main menu...");
-        }
-        
-    }
-    else
-    {
-        cout << "You want to re-enter data or Quit?(re/quit)" << endl;
-        cin >> choice;
-        if (choice == "re")
-            cout << "You choose too re-enter data again." << endl;
-        else
-           jetassign::input::wait_for_enter("Press ENTER to return to the main menu...");
-    }
 }
 
 void add_assignments_in_batch()
@@ -562,7 +543,7 @@ void add_assignments_in_batch()
     RequestsVector unsuccessful_requests_assigned;
     RequestsVector unsuccessful_requests_occupied;
 
-    const auto is_occupied = [&](const SeatLocation &location)
+    auto is_occupied = [&occupation_states](const SeatLocation &location)
     {
         return occupation_states.count(location)
             ? occupation_states[location]
@@ -674,7 +655,6 @@ void add_assignments_in_batch()
     jetassign::input::wait_for_enter("Press ENTER to return to the main menu...");
 }
 
-
 void show_latest_seating_plan()
 {
 	//display the top row (A-F)
@@ -686,16 +666,15 @@ void show_latest_seating_plan()
 	//display status
 	for (int R = 0; R < row; R++) {
 		cout << left << setw(5) << R + 1;
-
 		for (int C = 0; C < column; C++) {
 			cout << setw(3);
-			if (jetassign::seating_plan.is_occupied(R, C))
+			if (is_occupied(C, R))
 				cout << "X";
 			else
 				cout << "*";
 		}
 		cout << endl;
-	}
+
 }
 
 void show_details(long selection)
@@ -703,23 +682,11 @@ void show_details(long selection)
     if (selection == 1)
     {
         // Passenger
-        jetassign::ui::get_passenger_id();
-        if ( seat location > 0 && seat location <3)
-        {
-            std::cout << "First Class" << endl;
-        }
-        else if (seat location > 2 && seat location < 8)
-        {
-            std::cout << "Business Class" << endl;
-        }
-        else if (seat location > 7 && seat location < 14)
-        {
-            std::cout << "Economy Class" << endl;
+        jetassign::ui::get_passenger_id()
     }
     else
     {
         // Class
-        
     }
 }
 
@@ -731,12 +698,7 @@ namespace jetassign::core
 
     bool SeatingPlan::is_occupied(const SeatLocation &location) const
     {
-        return this->is_occupied(location.row(), location.column());
-    }
-
-    bool SeatingPlan::is_occupied(size_t row, size_t column) const
-    {
-        return ((bool) seating_plan.at(row).at(column));
+        return ((bool) seating_plan.at(location.row()).at(location.column()));
     }
 
     bool SeatingPlan::is_assigned(const Passenger &passenger) const
