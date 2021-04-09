@@ -494,11 +494,15 @@ void add_an_assignment()
 
 void delete_an_assignment()
 {   
+    using jetassign::input::wait_for_enter;
+    using jetassign::input::get_confirmation;
+    using jetassign::input::get_passenger;
+
     string confirm, choice, contin_pointer;
 
     while (true)
     {
-        auto passenger = jetassign::input::get_passenger();
+        auto passenger = get_passenger();
         if (jetassign::seating_plan.is_assigned(passenger))
         {
             auto location = jetassign::seating_plan.location_of(passenger);
@@ -512,23 +516,22 @@ void delete_an_assignment()
                 if (contin_pointer == "Y")
                     continue;
                 else
-                    jetassign::input::wait_for_enter("Press ENTER to return to the main menu...");
+                    wait_for_enter("Press ENTER to return to the main menu...");
             }
             else
             {
-                jetassign::input::wait_for_enter("Press ENTER to return to the main menu...");
+                wait_for_enter("Press ENTER to return to the main menu...");
             }
 
         }
         else
         {
             cout << "The passenger data is INCORRECT! " << endl;
-            cout << "You want to re-enter data or Quit?(re/quit)" << endl;
-            cin >> choice;
-            if (choice == "re")
+            
+            if (get_confirmation("You want to re-enter data?"))
                 cout << "You choose to re-enter data again." << endl;
             else
-                jetassign::input::wait_for_enter("Press ENTER to return to the main menu...");
+                wait_for_enter("Press ENTER to return to the main menu...");
         }
     }
 }
