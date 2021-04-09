@@ -214,14 +214,14 @@ namespace jetassign
                  *
                  * @param other The other instance.
                  **/
-                bool operator ==(const SeatLocation &other) const { return equals(other); }
+                bool operator==(const SeatLocation &other) const { return equals(other); }
 
                 /**
                  * Determine whether two instances represent different seat location.
                  *
                  * @param other The other instance.
                  **/
-                bool operator !=(const SeatLocation &other) const { return !equals(other); }
+                bool operator!=(const SeatLocation &other) const { return !equals(other); }
 
                 string to_string() const;
 
@@ -337,6 +337,17 @@ namespace jetassign
         };
     }
 
+    namespace output
+    {
+        namespace messages
+        {
+            using core::Passenger;
+            using core::SeatLocation;
+
+            string confirm_reassignment_for_assigned_passenger(const Passenger& passenger, const SeatLocation& old_location, const SeatLocation& new_location);
+        }
+    }
+
     /**
      * The input component.
      **/
@@ -450,10 +461,6 @@ void show_details(long selection);
 #ifndef _TEST
 int main(int argc, const char* argv[])
 {
-    std::set_terminate(handler);
-
-    jetassign::input::wait_for_enter();
-
     long selection;
     while ((selection = jetassign::input::get_menu_option(6)) != 6)
     {
@@ -506,16 +513,21 @@ void add_assignments_in_batch()
 
     using jetassign::seating_plan;
     using jetassign::core::SeatLocation;
+
     using jetassign::input::AssignmentRequest;
+    using jetassign::input::get_confirmation;
+    using jetassign::input::get_compact_assignments;
+
+    using jetassign::output::messages::confirm_reassignment_for_assigned_passenger;
+
+    auto requests = get_compact_assignments();
+    cout << '\n';
 
     const auto print_nothing_committed = []()
     {
-        cout << "No requests could be committed." << endl;
-        jetassign::input::wait_for_enter();
+        cout << "No requests could be committed.\n";
+        jetassign::input::wait_for_enter("Press ENTER to return to the main menu...");
     };
-
-    auto requests = jetassign::input::get_compact_assignments();
-    cout << endl;
 
     if (requests.size() == 0)
     {
@@ -524,38 +536,55 @@ void add_assignments_in_batch()
 
     typedef vector<AssignmentRequest> RequestsVector;
 
-    map<SeatLocation, bool, std::equal_to<SeatLocation>> occupation_states;
+    map<SeatLocation, bool, std::not_equal_to<SeatLocation>> occupation_states;
 
     RequestsVector successful_requests;
 
     RequestsVector unsuccessful_requests_assigned;
     RequestsVector unsuccessful_requests_occupied;
 
-    const auto is_occupied = [&](const SeatLocation &location)
+    auto is_occupied = [&occupation_states](const SeatLocation &location)
     {
-        return ((!occupation_states.count(location) && seating_plan.is_occupied(location))
-                || occupation_states[location]);
+        return occupation_states.count(location)
+            ? occupation_states[location]
+            : seating_plan.is_occupied(location);
     };
 
     for (auto request : requests)
     {
+        auto passenger = request.passenger();
         auto location = request.location();
 
         if (seating_plan.is_assigned(request.passenger()))
         {
+            auto assigned_location = *(seating_plan.location_of(passenger));
+            occupation_states[assigned_location] = true;
+
+            if (!get_confirmation(confirm_reassignment_for_assigned_passenger(passenger, assigned_location, location), false))
+            {
             unsuccessful_requests_assigned.push_back(request);
         }
         else if (is_occupied(location))
         {
-            if (!occupation_states.count(location))
+                occupation_states[location] = true;
+                unsuccessful_requests_occupied.push_back(request);
+            }
+            else
             {
                 occupation_states[location] = true;
-            }
+                occupation_states[assigned_location] = false;
 
+                successful_requests.push_back(request);
+            }
+        }
+        else if (is_occupied(location))
+        {
+            occupation_states[location] = true;
             unsuccessful_requests_occupied.push_back(request);
         }
         else
         {
+            occupation_states[location] = true;
             successful_requests.push_back(request);
         }
     }
@@ -564,11 +593,11 @@ void add_assignments_in_batch()
     const auto unsuccessful_assigned_count = unsuccessful_requests_assigned.size();
     const auto unsuccessful_occupied_count = unsuccessful_requests_occupied.size();
 
-    const auto print_requests_list = [](const RequestsVector& requests)
+    const auto print_requests_list = [](const RequestsVector& requests, size_t depth = 0)
     {
         for (auto request : requests)
         {
-            cout << "- " << request.to_string() << "\n";
+            cout << string(2 * depth, ' ') << "- " << request.to_string() << "\n";
         }
     };
 
@@ -587,13 +616,13 @@ void add_assignments_in_batch()
         if (unsuccessful_assigned_count > 0)
         {
             cout << "- Already assigned:\n";
-            print_requests_list(unsuccessful_requests_assigned);
+            print_requests_list(unsuccessful_requests_assigned, 1);
         }
 
         if (unsuccessful_occupied_count > 0)
         {
             cout << "- Seat was occupied:\n";
-            print_requests_list(unsuccessful_requests_occupied);
+            print_requests_list(unsuccessful_requests_occupied, 1);
         }
 
         cout << "\n";
@@ -604,9 +633,7 @@ void add_assignments_in_batch()
         return print_nothing_committed();
     }
 
-    cout << "Are you sure to commit the requests?" << flush;
-
-    if (true)
+    if (get_confirmation("Are you sure to commit the requests?", false))
     {
         for (auto request : successful_requests)
         {
@@ -773,6 +800,26 @@ namespace jetassign::core
 namespace jetassign::exceptions
 {
 
+}
+
+namespace jetassign::output
+{
+    namespace messages
+    {
+        string confirm_reassignment_for_assigned_passenger(const Passenger& passenger, const SeatLocation& old_location, const SeatLocation& new_location)
+        {
+            string message;
+            return message
+                .append(passenger.name())
+                .append(" (")
+                .append(passenger.passport_id())
+                .append(") was already assigned to ")
+                .append(old_location)
+                .append(", would you like to move the passenger to ")
+                .append(new_location)
+                .append(" if the seat was available?");
+        }
+    }
 }
 
 namespace jetassign::input
