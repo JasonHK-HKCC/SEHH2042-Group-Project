@@ -562,10 +562,10 @@ void add_assignments_in_batch()
 
             if (!get_confirmation(confirm_reassignment_for_assigned_passenger(passenger, assigned_location, location), false))
             {
-            unsuccessful_requests_assigned.push_back(request);
-        }
-        else if (is_occupied(location))
-        {
+                unsuccessful_requests_assigned.push_back(request);
+            }
+            else if (is_occupied(location))
+            {
                 occupation_states[location] = true;
                 unsuccessful_requests_occupied.push_back(request);
             }
