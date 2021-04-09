@@ -1,9 +1,3 @@
-#ifdef __unix__
-    #include <termios.h>
-#endif
-
-#include <execinfo.h>
-
 #include <algorithm>
 #include <array>
 #include <iomanip>
