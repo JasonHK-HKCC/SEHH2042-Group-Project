@@ -493,34 +493,43 @@ void add_an_assignment()
 }
 
 void delete_an_assignment()
-{
-    string confirm, choice;
+{   
+    string confirm, choice, contin_pointer;
 
-    while (true);
-    auto passenger = jetassign::input::get_passenger();
-    if (jetassign::seating_plan.is_assigned(passenger))
+    while (true)
     {
-        auto location = jetassign::seating_plan.location_of(passenger);
-        cout << "COMFIRM!You are going to delete the assignment!(Y/N)" << endl;
-        cin >> confirm;
-        if (confirm == "Y")
+        auto passenger = jetassign::input::get_passenger();
+        if (jetassign::seating_plan.is_assigned(passenger))
         {
-            jetassign::seating_plan.remove(location.value());
+            auto location = jetassign::seating_plan.location_of(passenger);
+            cout << "COMFIRM!You are going to delete the assignment!(Y/N)" << endl;
+            cin >> confirm;
+            if (confirm == "Y")
+            {
+                jetassign::seating_plan.remove(location.value());
+                cout << "Do you want to delete another assignment?(Y/N)" << endl;
+                cin >> contin_pointer;
+                if (contin_pointer == "Y")
+                    continue;
+                else
+                    jetassign::input::wait_for_enter("Press ENTER to return to the main menu...");
+            }
+            else
+            {
+                jetassign::input::wait_for_enter("Press ENTER to return to the main menu...");
+            }
+
         }
         else
         {
-            jetassign::input::wait_for_enter("Press ENTER to return to the main menu...");
+            cout << "The passenger data is INCORRECT! " << endl;
+            cout << "You want to re-enter data or Quit?(re/quit)" << endl;
+            cin >> choice;
+            if (choice == "re")
+                cout << "You choose to re-enter data again." << endl;
+            else
+                jetassign::input::wait_for_enter("Press ENTER to return to the main menu...");
         }
-        
-    }
-    else
-    {
-        cout << "You want to re-enter data or Quit?(re/quit)" << endl;
-        cin >> choice;
-        if (choice == "re")
-            cout << "You choose too re-enter data again." << endl;
-        else
-           jetassign::input::wait_for_enter("Press ENTER to return to the main menu...");
     }
 }
 
