@@ -65,7 +65,16 @@
         "streambuf": "cpp",
         "thread": "cpp",
         "cinttypes": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "climits": "cpp",
+        "cassert": "cpp",
+        "cerrno": "cpp",
+        "cfloat": "cpp",
+        "ciso646": "cpp",
+        "ios": "cpp",
+        "locale": "cpp",
+        "queue": "cpp",
+        "stack": "cpp"
     },
     "testMate.cpp.test.executables": "**/{build,Build,BUILD,out,Out,OUT}/**/*{test,Test,TEST}*"
 }
