@@ -690,25 +690,25 @@ void add_assignments_in_batch()
 
 void show_latest_seating_plan()
 {
-	//display the top row (A-F)
-	cout << std::left << std::setw(5) << " ";
-	for (char col = 'A'; col <= 'F'; col++)
-		cout << std::setw(3) << col;
-	cout << endl;
+    //display the top row (A-F)
+    cout << std::left << std::setw(5) << " ";
+    for (char col = 'A'; col <= 'F'; col++)
+        cout << std::setw(3) << col;
+    cout << endl;
 
-	//display status
-	for (int R = 0; R < JET_ROW_LENGTH; R++) {
-		cout << std::left << std::setw(5) << R + 1;
+    //display status
+    for (int R = 0; R < JET_ROW_LENGTH; R++) {
+        cout << std::left << std::setw(5) << R + 1;
 
-		for (int C = 0; C < JET_COLUMN_LENGTH; C++) {
-			cout << std::setw(3);
-			if (jetassign::seating_plan.is_occupied(R, C))
-				cout << "X";
-			else
-				cout << "*";
-		}
-		cout << endl;
-	}
+        for (int C = 0; C < JET_COLUMN_LENGTH; C++) {
+            cout << std::setw(3);
+            if (jetassign::seating_plan.is_occupied(R, C))
+                cout << "X";
+            else
+                cout << "*";
+        }
+        cout << endl;
+    }
 }
 
 void show_details(long selection)
