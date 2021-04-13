@@ -501,49 +501,31 @@ void add_an_assignment()
 
 void delete_an_assignment()
 {
+    using jetassign::seating_plan;
+
     using jetassign::input::wait_for_enter;
     using jetassign::input::get_confirmation;
     using jetassign::input::get_passenger;
 
-    while (true)
+    do
     {
         auto passenger = get_passenger();
-        if (jetassign::seating_plan.is_assigned(passenger))
+        if (seating_plan.is_assigned(passenger))
         {
-            auto location = jetassign::seating_plan.location_of(passenger);
-            if (get_confirmation("COMFIRM!You are going to delete the assignment!"))
+            auto location = seating_plan.location_of(passenger);
+            if (get_confirmation("Are you sure to remove the passenger from the seating plan?", false))
             {
-                jetassign::seating_plan.remove(location.value());
-                cout << "Assignment has been deleted successfully" << endl;
-                if (get_confirmation("Do you want to delete another assignment?"))
-                {
-                    continue;
-                }
-                else
-                {
-                    cout << "Press ENTER to return to the main menu..." << endl;
-                    return;
-                }
-            }
-            else
-            {
-                wait_for_enter("Press ENTER to return to the main menu...");
-                return;
+                seating_plan.remove(*location);
+
+                cout << "Done, the passenger was removed from the seating plan.\n";
             }
         }
         else
         {
-            cout << "No such passenger exist!" << endl;
-            if (get_confirmation("You want to re-enter data?"))
-            {
-                cout << "You choose to re-enter data again." << endl;
-                continue;
-            }
-            else
-                cout << "Press ENTER to return to the main menu..." << endl;
-                return;
+            cout << "No such passenger exist!\n";
         }
     }
+    while (get_confirmation("Do you want to remove another passenger?", true));
 }
 
 void add_assignments_in_batch()
