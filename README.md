@@ -9,7 +9,7 @@ Building the Project
 - [Git][git-homepage]
 - [CMake][cmake-homepage]
 
-### Build Instruction
+### Build Instructions
 
 First, clone this repository:
 
