@@ -505,40 +505,43 @@ void delete_an_assignment()
     using jetassign::input::get_confirmation;
     using jetassign::input::get_passenger;
 
-    string confirm, choice, contin_pointer;
-
     while (true)
     {
         auto passenger = get_passenger();
         if (jetassign::seating_plan.is_assigned(passenger))
         {
             auto location = jetassign::seating_plan.location_of(passenger);
-            cout << "COMFIRM!You are going to delete the assignment!(Y/N)" << endl;
-            cin >> confirm;
-            if (confirm == "Y")
+            if (get_confirmation("COMFIRM!You are going to delete the assignment!"))
             {
                 jetassign::seating_plan.remove(location.value());
-                cout << "Do you want to delete another assignment?(Y/N)" << endl;
-                cin >> contin_pointer;
-                if (contin_pointer == "Y")
+                cout << "Assignment has been deleted successfully" << endl;
+                if (get_confirmation("Do you want to delete another assignment?"))
+                {
                     continue;
+                }
                 else
-                    wait_for_enter("Press ENTER to return to the main menu...");
+                {
+                    cout << "Press ENTER to return to the main menu..." << endl;
+                    return;
+                }
             }
             else
             {
                 wait_for_enter("Press ENTER to return to the main menu...");
+                return;
             }
-
         }
         else
         {
             cout << "No such passenger exist!" << endl;
-
             if (get_confirmation("You want to re-enter data?"))
+            {
                 cout << "You choose to re-enter data again." << endl;
+                continue;
+            }
             else
-                wait_for_enter("Press ENTER to return to the main menu...");
+                cout << "Press ENTER to return to the main menu..." << endl;
+                return;
         }
     }
 }
