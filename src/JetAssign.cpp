@@ -426,6 +426,9 @@ namespace jetassign
         }
     }
 
+    /**
+     * The seating plan of the airplane.
+     **/
     auto seating_plan = core::SeatingPlan();
 }
 
