@@ -810,17 +810,17 @@ namespace jetassign::core
 
     SeatingPlan::SeatingPlan() {}
 
-    bool SeatingPlan::is_occupied(const SeatLocation &location) const
+    bool SeatingPlan::is_occupied(const SeatLocation &location) const noexcept
     {
         return this->is_occupied(location.row(), location.column());
     }
 
-    bool SeatingPlan::is_occupied(size_t row, size_t column) const
+    bool SeatingPlan::is_occupied(size_t row, size_t column) const noexcept
     {
         return ((bool) seating_plan.at(row).at(column));
     }
 
-    bool SeatingPlan::is_assigned(const Passenger &passenger) const
+    bool SeatingPlan::is_assigned(const Passenger &passenger) const noexcept
     {
         return ((bool) this->location_of(passenger));
     }
@@ -1306,7 +1306,7 @@ namespace jetassign::input
 
 namespace numericutil
 {
-    template<typename T, typename std::enable_if<std::is_arithmetic<T>::value>::type* = nullptr>
+    template<typename T, typename std::enable_if<std::is_arithmetic<T>::value>::type*>
     bool is_even(const T &value)
     {
         return ((value % 2) == 0);
