@@ -161,10 +161,6 @@ namespace jetassign
         class SeatLocation
         {
             public:
-                typedef Passenger value_type;
-                typedef value_type& reference;
-                typedef const value_type& const_reference;
-
                 static string row_to_string(size_t row);
 
                 static string column_to_string(size_t column);
@@ -229,6 +225,12 @@ namespace jetassign
         class SeatingPlan
         {
             public:
+                typedef optional<Passenger> value_type;
+
+                typedef value_type& reference;
+                
+                typedef const value_type& const_reference;
+
                 SeatingPlan();
 
                 /**
@@ -236,23 +238,23 @@ namespace jetassign
                  *
                  * @param location The location of the seat.
                  **/
-                bool is_occupied(const SeatLocation &location) const;
+                bool is_occupied(const SeatLocation &location) const noexcept;
 
-                bool is_occupied(size_t row, size_t column) const;
+                bool is_occupied(size_t row, size_t column) const noexcept;
 
                 /**
                  * Determine whether a seat was already assigned to the passenger.
                  **/
-                bool is_assigned(const Passenger &passenger) const;
+                bool is_assigned(const Passenger &passenger) const noexcept;
 
                 /**
                  * Returns the passenger who was assigned to the given seat.
                  *
                  * @param location The location of the seat.
                  **/
-                const optional<Passenger> at(const SeatLocation &location) const;
+                const const_reference at(const SeatLocation &location) const;
 
-                const optional<Passenger> at(size_t row, size_t column) const;
+                const const_reference at(size_t row, size_t column) const;
 
                 optional<SeatLocation> location_of(const Passenger &passenger) const;
 
@@ -262,7 +264,7 @@ namespace jetassign
                  * @param location  The location of the seat.
                  * @param passenger The passenger to be assigned.
                  **/
-                void assign(const SeatLocation &location, const Passenger &passenger);
+                void assign(const SeatLocation &location, const_reference passenger);
 
                 /**
                  * Remove a passenger at the specific seat from the seating plan.
@@ -308,6 +310,11 @@ namespace jetassign
 
             private:
                 SeatLocation location;
+        };
+
+        class PassengerAssignedError : public runtime_error
+        {
+            
         };
 
         class InvalidInputError : public invalid_argument
@@ -486,7 +493,10 @@ int main(int argc, const char* argv[])
 
 void add_an_assignment()
 {
+    auto passenger = jetassign::input::get_passenger();
+    auto location = jetassign::input::get_seat_location();
 
+    jetassign::seating_plan.assign(location, passenger);
 }
 
 void delete_an_assignment()
@@ -740,12 +750,12 @@ namespace jetassign::core
         return ((bool) this->location_of(passenger));
     }
 
-    const optional<Passenger> SeatingPlan::at(const SeatLocation &location) const
+    SeatingPlan::const_reference SeatingPlan::at(const SeatLocation &location) const
     {
         return this->at(location.row(), location.column());
     }
 
-    const optional<Passenger> SeatingPlan::at(size_t row, size_t column) const
+    SeatingPlan::const_reference SeatingPlan::at(size_t row, size_t column) const
     {
         return seating_plan.at(row).at(column);
     }
@@ -766,7 +776,7 @@ namespace jetassign::core
         return std::nullopt;
     }
 
-    void SeatingPlan::assign(const SeatLocation &location, const Passenger &passenger)
+    void SeatingPlan::assign(const SeatLocation &location, const_reference passenger)
     {
         if (this->is_occupied(location))
         {
