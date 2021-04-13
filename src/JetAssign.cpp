@@ -4,6 +4,7 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <optional>
 #include <regex>
 #include <set>
 #include <string>
