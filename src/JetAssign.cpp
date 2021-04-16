@@ -502,10 +502,6 @@ int main(int argc, const char* argv[])
 
 void add_an_assignment()
 {
-    auto passenger = jetassign::input::get_passenger();
-    auto location = jetassign::input::get_seat_location();
-
-    jetassign::seating_plan.assign(location, passenger);
 }
 
 void delete_an_assignment()
