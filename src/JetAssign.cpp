@@ -757,7 +757,7 @@ void show_details(long selection)
     {
         //passenger
         auto get_ID = jetassign::input::get_passport_id();
-        
+
         for (int r = 0; r < JET_ROW_LENGTH; r++)
         {
             for (int c = 0; c < JET_COLUMN_LENGTH; c++)
@@ -779,7 +779,7 @@ void show_details(long selection)
                             {
                                 cout << name << endl << ID << endl << "Business Class" << endl << location << endl << '\n';
                             }
-                            else 
+                            else
                             {
                                 cout << name << endl <<  ID << endl << "Economy Class" << endl << location << endl << '\n';
                             }
@@ -788,7 +788,6 @@ void show_details(long selection)
                         {
                             cout << "Error" << endl;
                         }
-                    
                 }
             }
         }
@@ -804,7 +803,7 @@ void show_details(long selection)
            cout << "Enter a particular class type: " << endl;
 
         cin.getline(enter_class_type, 10, '\n');
-       
+
         if (strcmp(enter_class_type, class_type_firstclass)==0)
         {
             for (int r = 0; r < JET_ROW_LENGTH; r++)
