@@ -496,10 +496,39 @@ int main(int argc, const char* argv[])
 
 void add_an_assignment()
 {
+    char res;
     auto passenger = jetassign::input::get_passenger();
-    auto location = jetassign::input::get_seat_location();
 
-    jetassign::seating_plan.assign(location, passenger);
+    while (true)
+    {
+        auto location = jetassign::input::get_seat_location();
+        //check if seat available
+        if (jetassign::seating_plan.is_occupied(location))
+        {
+            //assign seat
+            jetassign::seating_plan.assign(location, passenger);
+
+            //print the boarding pass
+            cout << "Assignment accepted, printing your boarding pass... \n";
+            cout << "\n*** Airlines Boarding Pass ***" << endl;
+            cout << "Name: " << jetassign::core::Passenger::name << ", SEAT: " << location << endl;
+            if (location.row() >= 1 && location.row() <= 2)
+                cout << "First Class" << endl;
+            else if (location.row() < 8)
+                    cout << "Business Class" << endl;
+                else
+                    cout << "Economy Class" << endl;
+                    break;
+        }
+        cout << "The seat is already taken. " << endl;
+        cout << "Do you want to choose another seat (y/n)? ";
+        cin >> res;
+        if (res == 'n')
+        {
+            cout << "Returning to menu..." ;
+            break;
+        }
+    }
 }
 
 void delete_an_assignment()
