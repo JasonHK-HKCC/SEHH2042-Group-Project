@@ -502,6 +502,46 @@ int main(int argc, const char* argv[])
 
 void add_an_assignment()
 {
+    using jetassign::input::wait_for_enter;
+
+    char confirm;
+    auto passenger = jetassign::input::get_passenger();
+    auto p_name = passenger.name();
+    auto p_id = passenger.passport_id();
+
+    while (true)
+    {
+        auto location = jetassign::input::get_seat_location();
+
+        //check if seat available
+        if (jetassign::seating_plan.is_occupied(location))
+        {
+            cout << "The seat is already taken. " << endl;
+
+            if (jetassign::input::get_confirmation("Do you want to choose another seat?"))
+            {
+                cout << "You choose to select another seat." << endl;
+                continue;
+            }
+            else
+            {
+                wait_for_enter("Press ENTER to return to the main menu...");
+                break;
+            }
+        }
+        else
+        {
+            //assign the seat
+            jetassign::seating_plan.assign(location, passenger);
+
+            //print the detail
+            cout << "Assignment accepted, here are the detail... \n";
+            cout << "Name: " << p_name << ", Passport ID: " << p_id << ", SEAT: " << location << endl;
+
+            wait_for_enter("Press ENTER to return to the main menu...");
+            break;
+        }
+    }
 }
 
 void delete_an_assignment()
