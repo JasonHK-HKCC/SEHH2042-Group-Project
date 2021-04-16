@@ -333,17 +333,6 @@ namespace jetassign
         };
     }
 
-    namespace output
-    {
-        namespace messages
-        {
-            using core::Passenger;
-            using core::SeatLocation;
-
-            string confirm_reassignment_for_assigned_passenger(const Passenger& passenger, const SeatLocation& old_location, const SeatLocation& new_location);
-        }
-    }
-
     /**
      * The input component.
      **/
@@ -423,6 +412,23 @@ namespace jetassign
             SeatLocation parse_seat_location(const string &input);
 
             AssignmentRequest parse_compact_assignment(const string &input);
+        }
+    }
+
+    namespace output
+    {
+        namespace messages
+        {
+            using std::vector;
+
+            using core::Passenger;
+            using core::SeatLocation;
+
+            using input::AssignmentRequest;
+
+            string confirm_reassignment_for_assigned_passenger(const Passenger& passenger, const SeatLocation& old_location, const SeatLocation& new_location);
+
+            string report_committed_requests(size_t count);
         }
     }
 
@@ -544,13 +550,14 @@ void add_assignments_in_batch()
     using jetassign::input::get_confirmation;
     using jetassign::input::get_compact_assignments;
 
-    using jetassign::output::messages::confirm_reassignment_for_assigned_passenger;
+    namespace messages = jetassign::output::messages;
 
     do
     {
         auto requests = get_compact_assignments();
         cout << '\n';
 
+        // Jump to the end of the loop early if no requests were received.
         if (requests.size() == 0)
         {
             cout << "No requests could be committed.\n";
@@ -561,10 +568,10 @@ void add_assignments_in_batch()
 
         map<SeatLocation, bool, std::not_equal_to<SeatLocation>> occupation_states;
 
-        RequestsVector successful_requests;
+        RequestsVector valid_requests;
 
-        RequestsVector unsuccessful_requests_assigned;
-        RequestsVector unsuccessful_requests_occupied;
+        RequestsVector invalid_requests_assigned;
+        RequestsVector invalid_requests_occupied;
 
         const auto is_occupied = [&](const SeatLocation &location)
         {
@@ -583,38 +590,41 @@ void add_assignments_in_batch()
                 auto assigned_location = *(seating_plan.location_of(passenger));
                 occupation_states[assigned_location] = true;
 
-                if (!get_confirmation(confirm_reassignment_for_assigned_passenger(passenger, assigned_location, location), false))
+                if (!get_confirmation(messages::confirm_reassignment_for_assigned_passenger(passenger, assigned_location, location), true))
                 {
-                    unsuccessful_requests_assigned.push_back(request);
+                    invalid_requests_assigned.push_back(request);
                 }
                 else if (is_occupied(location))
                 {
                     occupation_states[location] = true;
-                    unsuccessful_requests_occupied.push_back(request);
+                    invalid_requests_occupied.push_back(request);
                 }
                 else
                 {
-                    occupation_states[location] = true;
                     occupation_states[assigned_location] = false;
+                    occupation_states[location] = true;
 
-                    successful_requests.push_back(request);
+                    valid_requests.push_back(request);
                 }
             }
             else if (is_occupied(location))
             {
                 occupation_states[location] = true;
-                unsuccessful_requests_occupied.push_back(request);
+                invalid_requests_occupied.push_back(request);
             }
             else
             {
                 occupation_states[location] = true;
-                successful_requests.push_back(request);
+                valid_requests.push_back(request);
             }
         }
 
-        const auto successful_count = successful_requests.size();
-        const auto unsuccessful_assigned_count = unsuccessful_requests_assigned.size();
-        const auto unsuccessful_occupied_count = unsuccessful_requests_occupied.size();
+        /** The number of valid requests. */
+        const auto valid_count = valid_requests.size();
+        /** The number of invalid requests, which is because the passenger was assigned a seat. */
+        const auto invalid_assigned_count = invalid_requests_assigned.size();
+        /** The number of invalid requests, which is because the seat was occupied. */
+        const auto invalid_occupied_count = invalid_requests_occupied.size();
 
         const auto print_requests_list = [](const RequestsVector& requests, size_t depth = 0)
         {
@@ -624,42 +634,45 @@ void add_assignments_in_batch()
             }
         };
 
-        if (successful_count > 0)
+        // List the valid requests, if any.
+        if (valid_count > 0)
         {
             cout << "These requests will be committed:\n";
-            print_requests_list(successful_requests);
+            print_requests_list(valid_requests);
 
             cout << '\n';
         }
 
-        if ((unsuccessful_assigned_count > 0) || (unsuccessful_occupied_count > 0))
+        // List the invalid requests, if any.
+        if ((invalid_assigned_count > 0) || (invalid_occupied_count > 0))
         {
             cout << "These requests will be dropped:\n";
 
-            if (unsuccessful_assigned_count > 0)
+            if (invalid_assigned_count > 0)
             {
                 cout << "- Already assigned:\n";
-                print_requests_list(unsuccessful_requests_assigned, 1);
+                print_requests_list(invalid_requests_assigned, 1);
             }
 
-            if (unsuccessful_occupied_count > 0)
+            if (invalid_occupied_count > 0)
             {
                 cout << "- Seat was occupied:\n";
-                print_requests_list(unsuccessful_requests_occupied, 1);
+                print_requests_list(invalid_requests_occupied, 1);
             }
 
             cout << '\n';
         }
 
-        if (successful_count == 0)
+        // Jump to the end of the loop early if no valid requests.
+        if (valid_count == 0)
         {
             cout << "No requests could be committed.\n";
             continue;
         }
 
-        if (get_confirmation("Are you sure to commit the requests?", false))
+        if (get_confirmation("Are you sure to commit the requests?", true))
         {
-            for (auto request : successful_requests)
+            for (auto request : valid_requests)
             {
                 if (seating_plan.is_assigned(request.passenger()))
                 {
@@ -669,7 +682,7 @@ void add_assignments_in_batch()
                 seating_plan.assign(request.location(), request.passenger());
             }
 
-            cout << "Done, " << successful_count << " " << ((successful_count == 1) ? "request was" : "requests were") << " committed.\n";
+            cout << messages::report_committed_requests(valid_count) << '\n';
         }
         else
         {
@@ -941,6 +954,8 @@ namespace jetassign::output
 {
     namespace messages
     {
+        using std::to_string;
+
         string confirm_reassignment_for_assigned_passenger(const Passenger& passenger, const SeatLocation& old_location, const SeatLocation& new_location)
         {
             string message;
@@ -953,6 +968,17 @@ namespace jetassign::output
                 .append(", would you like to move the passenger to ")
                 .append(new_location)
                 .append(" if the seat was available?");
+        }
+
+        string report_committed_requests(size_t count)
+        {
+            string message;
+            return message
+                .append("Done, ")
+                .append(to_string(count))
+                .append(" ")
+                .append((count == 1) ? "request was" : "requests were")
+                .append(" committed.");
         }
     }
 }
