@@ -899,8 +899,6 @@ long show_details()
 void show_details_passenger()
 {
     using jetassign::seating_plan;
-    using jetassign::core::Passenger;
-    using jetassign::core::SeatLocation;
     using jetassign::core::to_string;
     using jetassign::input::wait_for_enter;
     using jetassign::input::get_confirmation;
