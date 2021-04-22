@@ -610,11 +610,9 @@ long main_menu()
         }},
     };
 
+    cout << SECTION_SEPARATOR;
     print_menu(menu);
-    auto selection = get_menu_option(menu.options.size());
-    cout << "\n\n";
-
-    return selection;
+    return get_menu_option(menu.options.size());
 }
 
 void add_an_assignment()
@@ -908,6 +906,7 @@ long show_details()
         }},
     };
 
+    cout << SECTION_SEPARATOR;
     print_menu(menu);
     return get_menu_option(menu.options.size());
 }
@@ -956,74 +955,87 @@ void show_details_class()
     using std::setw;
 
     using jetassign::seating_plan;
-
     using jetassign::core::SeatLocation;
-
+    using jetassign::input::wait_for_enter;
+    using jetassign::input::get_confirmation;
     using jetassign::input::get_menu_option;
+    using jetassign::output::Menu;
+    using jetassign::output::print_menu;
 
-    size_t starting_row;
-    size_t ending_row;
-
-    switch (get_menu_option(4))
+    static const Menu<4> menu =
     {
-        case 1:
-        {
-            starting_row = 0;
-            ending_row   = 2;
-            break;
-        }
-        case 2:
-        {
-            starting_row = 2;
-            ending_row   = 7;
-            break;
-        }
-        case 3:
-        {
-            starting_row = 7;
-            ending_row   = 13;
-            break;
-        }
-    }
+        "Ticket Class",
+        {{
+            "First Class",
+            "Business Class",
+            "Economy Class",
+            "Back",
+        }},
+    };
 
-    static const auto kHorizontalSeparator = "  ";
-
-    static const auto kLocationColumnWidth = 4;
-    static const auto kPassengerNameColumnWidth = 70;
-
-    cout << left;
-
-    cout << string(80, '=') << '\n'
-         << kHorizontalSeparator
-         << setw(kLocationColumnWidth)      << "Seat"
-         << kHorizontalSeparator
-         << setw(kPassengerNameColumnWidth) << "Passenger Name"
-         << kHorizontalSeparator
-         << '\n'
-         << string(80, '-') << '\n';
-
-    for (auto row = starting_row; row < ending_row; row++)
+    do
     {
-        for (auto column = 0; column < JET_COLUMN_LENGTH; column++)
+        cout << SECTION_SEPARATOR
+             << "List the passengers of a particular ticket class.\n"
+             << '\n';
+
+        size_t starting_row;
+        size_t ending_row;
+
+        print_menu(menu);
+        switch (get_menu_option(menu.options.size()))
         {
-            const auto location = SeatLocation(row, column);
+            case 1:
+                starting_row = 0;
+                ending_row   = 2;
+                break;
 
-            const auto passenger_name = seating_plan.is_occupied(location)
-                ? seating_plan.at(location)->name()
-                : "vacant";
+            case 2:
+                starting_row = 2;
+                ending_row   = 7;
+                break;
 
-            cout << kHorizontalSeparator
-                 << right
-                 << setw(kLocationColumnWidth)      << location
-                 << left
-                 << kHorizontalSeparator
-                 << setw(kPassengerNameColumnWidth) << passenger_name
-                 << kHorizontalSeparator
-                 << '\n';
+            case 3:
+                starting_row = 7;
+                ending_row   = 13;
+                break;
+
+            case 4:
+                return;
         }
-    }
 
-    cout << string(80, '=') << '\n';
+        cout << '\n'
+             << "+------+---------------------------------------------------------------------+\n"
+             << "| Seat | Passenger Name                                                      |\n"
+             << "+------+---------------------------------------------------------------------+\n";
+
+        static const auto kLocationColumnWidth = 4;
+        static const auto kPassengerNameColumnWidth = 67;
+
+        for (auto row = starting_row; row < ending_row; row++)
+        {
+            for (auto column = 0; column < JET_COLUMN_LENGTH; column++)
+            {
+                const auto location = SeatLocation(row, column);
+
+                const auto passenger_name = seating_plan.is_occupied(location)
+                    ? seating_plan.at(location)->name()
+                    : "vacant";
+
+                cout << "| "
+                     << setw(kLocationColumnWidth) << right << location
+                     << " | "
+                     << setw(kPassengerNameColumnWidth) << left << passenger_name
+                     << " |\n";
+            }
+        }
+
+        cout << "+------+---------------------------------------------------------------------+\n"
+             << '\n';
+
+        wait_for_enter();
+    }
+    while (get_confirmation("Do you want to list the passengers of another ticket class?", true));
 }
 
 void save_and_exit()
