@@ -516,46 +516,41 @@ int main(int argc, const char* argv[])
 
 void add_an_assignment()
 {
+    using jetassign::seating_plan;
+
     using jetassign::input::wait_for_enter;
+    using jetassign::input::get_confirmation;
+    using jetassign::input::get_passenger;
+    using jetassign::input::get_seat_location;
 
-    char confirm;
-    auto passenger = jetassign::input::get_passenger();
-    auto p_name = passenger.name();
-    auto p_id = passenger.passport_id();
-
-    while (true)
+    do
     {
-        auto location = jetassign::input::get_seat_location();
+        auto passenger = get_passenger();
 
-        //check if seat available
-        if (jetassign::seating_plan.is_occupied(location))
+        auto location = get_seat_location();
+        while (seating_plan.is_occupied(location))
         {
-            cout << "The seat is already taken. " << endl;
+            cout << "The seat was already taken by another passenger.\n ";
 
-            if (jetassign::input::get_confirmation("Do you want to choose another seat?"))
+            if (!get_confirmation("Would you want to assign the passenger to another seat?", true))
             {
-                cout << "You choose to select another seat." << endl;
-                continue;
-            }
-            else
-            {
-                wait_for_enter("Press ENTER to return to the main menu...");
                 break;
             }
+            
+            location = get_seat_location();
         }
-        else
+
+        if (seating_plan.is_occupied(location))
         {
-            //assign the seat
-            jetassign::seating_plan.assign(location, passenger);
-
-            //print the detail
-            cout << "Assignment accepted, here are the detail... \n";
-            cout << "Name: " << p_name << ", Passport ID: " << p_id << ", SEAT: " << location << endl;
-
-            wait_for_enter("Press ENTER to return to the main menu...");
-            break;
+            cout << "Canceled, the seating plan was not updated.\n\n";
+            continue;
         }
+        
+        //assign the seat
+        seating_plan.assign(location, passenger);
+        cout << "Done, the seating plan was updated.\n\n";
     }
+    while (get_confirmation("Do you want to assign another passenger?", true));
 }
 
 void delete_an_assignment()
