@@ -447,7 +447,7 @@ namespace jetassign
 
         /**
          * @brief A container for storing menu and its fixed number of options.
-         * 
+         *
          * @tparam TMenuSize Number of options.
          **/
         template<size_t TMenuSize>
@@ -591,7 +591,7 @@ long main_menu()
     print_menu(menu);
     auto selection = get_menu_option(menu.options.size());
     cout << "\n\n";
-    
+
     return selection;
 }
 
@@ -617,7 +617,7 @@ void add_an_assignment()
             {
                 break;
             }
-            
+
             location = get_seat_location();
         }
 
@@ -626,7 +626,7 @@ void add_an_assignment()
             cout << "Canceled, the seating plan was not updated.\n\n";
             continue;
         }
-        
+
         //assign the seat
         seating_plan.assign(location, passenger);
         cout << "Done, the seating plan was updated.\n\n";
@@ -1016,7 +1016,7 @@ void show_details_class()
                  << '\n';
         }
     }
-    
+
     cout << string(80, '=') << '\n';
 }
 
