@@ -739,25 +739,54 @@ void add_assignments_in_batch()
 
 void show_latest_seating_plan()
 {
-    //display the top row (A-F)
-    cout << std::left << std::setw(5) << " ";
-    for (char col = 'A'; col <= 'F'; col++)
-        cout << std::setw(3) << col;
-    cout << endl;
+    using std::left;
+    using std::right;
+    using std::setw;
 
-    //display status
-    for (int R = 0; R < JET_ROW_LENGTH; R++) {
-        cout << std::left << std::setw(5) << R + 1;
+    using jetassign::seating_plan;
 
-        for (int C = 0; C < JET_COLUMN_LENGTH; C++) {
-            cout << std::setw(3);
-            if (jetassign::seating_plan.is_occupied(R, C))
-                cout << "X";
-            else
-                cout << "*";
-        }
-        cout << endl;
+    static const auto kColumnWidth = 3;
+    static const auto kFirstColumnWidth = 3;
+
+    static const auto kLegendSymbolWidth = 3;
+    static const auto kLegendSymbolNameWidth = 13;
+
+    static const auto kEmptySymbol = '*';
+    static const auto kOccupiedSymbol = 'X';
+
+    cout << right;
+
+    // Prints the header row.
+    cout << setw(kFirstColumnWidth) << ' ';
+    for (auto column = 0; column < JET_COLUMN_LENGTH; column++)
+    {
+        cout << setw(kColumnWidth) << ((char) ('A' + column));
     }
+    cout << '\n';
+
+    // Prints each row of the seating plan.
+    for (auto row = 0; row < JET_ROW_LENGTH; row++)
+    {
+        // Prints the row number.
+        cout << setw(kFirstColumnWidth) << (row + 1);
+
+        for (auto column = 0; column < JET_COLUMN_LENGTH; column++)
+        {
+            cout << setw(kColumnWidth) << (seating_plan.is_occupied(row, column) ? kOccupiedSymbol : kEmptySymbol);
+        }
+
+        cout << '\n';
+    }
+    cout << '\n';
+
+    // Prints the legend for the seating plan.
+    cout << "Legend\n"
+         << left
+         << setw(kLegendSymbolWidth) << kEmptySymbol    << setw(kLegendSymbolNameWidth) << "Empty"
+         << setw(kLegendSymbolWidth) << kOccupiedSymbol << setw(kLegendSymbolNameWidth) << "Occupied"
+         << '\n';
+
+    return jetassign::input::wait_for_enter();
 }
 
 void show_details(long selection)
