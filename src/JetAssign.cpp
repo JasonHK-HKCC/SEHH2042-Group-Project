@@ -1424,6 +1424,9 @@ namespace stringutil
 {
     namespace
     {
+        /**
+         * The set of characters that considered whitespace characters.
+         **/
         const auto kWhitespace = "\t\n\v\f\r\x20\xA0";
     }
 
@@ -1434,13 +1437,21 @@ namespace stringutil
 
     string trim_start(const string &input)
     {
+        /** The position of the first character that not a whitespace character. */
         const auto index = input.find_first_not_of(kWhitespace);
+
+        // Returns the substring of the input if there were some non-whitespace characters,
+        // otherwise returns an empty string.
         return ((index == string::npos) ? "" : input.substr(index));
     }
 
     string trim_end(const string &input)
     {
+        /** The position of the last character that not a whitespace character. */
         const auto index = input.find_last_not_of(kWhitespace);
+
+        // Returns the substring of the input if there were some non-whitespace characters,
+        // otherwise returns an empty string.
         return ((index == string::npos) ? "" : input.substr(0, index + 1));
     }
 
