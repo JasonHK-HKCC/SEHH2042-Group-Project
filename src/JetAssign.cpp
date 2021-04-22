@@ -597,6 +597,8 @@ long main_menu()
     using jetassign::output::Menu;
     using jetassign::output::print_menu;
 
+    cout << SECTION_SEPARATOR;
+    
     static const Menu<6> menu =
     {
         "Main Menu",
@@ -610,7 +612,6 @@ long main_menu()
         }},
     };
 
-    cout << SECTION_SEPARATOR;
     print_menu(menu);
     return get_menu_option(menu.options.size());
 }
@@ -896,6 +897,8 @@ long show_details()
     using jetassign::output::Menu;
     using jetassign::output::print_menu;
 
+    cout << SECTION_SEPARATOR;
+
     static const Menu<3> menu =
     {
         "Details",
@@ -906,7 +909,6 @@ long show_details()
         }},
     };
 
-    cout << SECTION_SEPARATOR;
     print_menu(menu);
     return get_menu_option(menu.options.size());
 }
