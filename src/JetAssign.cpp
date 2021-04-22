@@ -825,9 +825,8 @@ void show_details(long selection)
                         {
                             const auto passenger = *(jetassign::seating_plan.at(r, c));
                             auto name = passenger.name();
-                            auto ID = passenger.passport_id();
                             auto location = *(jetassign::seating_plan.location_of(passenger));
-                            cout << name << endl << ID << endl << location << endl << '\n';
+                            cout << name << endl << location << endl << '\n';
                         }
                         else
                         {
@@ -849,9 +848,8 @@ void show_details(long selection)
                         {
                             const auto passenger = *(jetassign::seating_plan.at(r, c));
                             auto name = passenger.name();
-                            auto ID = passenger.passport_id();
                             auto location = *(jetassign::seating_plan.location_of(passenger));
-                            cout << name << endl << ID << endl << location << endl << '\n';
+                            cout << name << endl << location << endl << '\n';
                         }
                         else
                         {
@@ -872,10 +870,9 @@ void show_details(long selection)
                         if (jetassign::seating_plan.is_occupied(r, c))
                         {
                             const auto passenger = *(jetassign::seating_plan.at(r, c));
-                            auto name = passenger.name();
-                            auto ID = passenger.passport_id();
+                            auto name = passenger.name();                       
                             auto location = *(jetassign::seating_plan.location_of(passenger));
-                            cout << name << endl << ID << endl << location << endl << '\n';
+                            cout << name << endl << location << endl << '\n';
                         }
                         else
                         {
