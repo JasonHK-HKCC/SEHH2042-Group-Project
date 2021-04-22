@@ -52,6 +52,8 @@ using std::string;
 
 #define STRINGIFY_VALUE(value) STRINGIFY(value)
 
+#define SECTION_SEPARATOR "\n\n"
+
 namespace numericutil
 {
     template<typename T, typename std::enable_if<std::is_arithmetic<T>::value>::type* = nullptr>
@@ -265,6 +267,8 @@ namespace jetassign
 
                 bool is_occupied(size_t row, size_t column) const noexcept;
 
+                bool is_assigned(const string &passport_id) const noexcept;
+
                 /**
                  * Determine whether a seat was already assigned to the passenger.
                  **/
@@ -278,6 +282,8 @@ namespace jetassign
                 const const_reference at(const SeatLocation &location) const;
 
                 const const_reference at(size_t row, size_t column) const;
+
+                optional<SeatLocation> location_of(const string &passport_id) const;
 
                 optional<SeatLocation> location_of(const Passenger &passenger) const;
 
@@ -887,60 +893,46 @@ long show_details()
     };
 
     print_menu(menu);
-    auto selection = get_menu_option(menu.options.size());
-    cout << "\n\n";
-
-    return selection;
+    return get_menu_option(menu.options.size());
 }
 
 void show_details_passenger()
 {
     using jetassign::seating_plan;
+    using jetassign::core::Passenger;
     using jetassign::core::SeatLocation;
     using jetassign::core::to_string;
+    using jetassign::input::wait_for_enter;
+    using jetassign::input::get_confirmation;
     using jetassign::input::get_passport_id;
 
-    const auto passport_id = get_passport_id();
-
-    for (auto row = 0; row < JET_ROW_LENGTH; row++)
+    do
     {
-        for (auto column = 0; column < JET_COLUMN_LENGTH; column++)
+        cout << SECTION_SEPARATOR
+             << "Search for a particular passenger using his/her passport ID.\n";
+        const auto passport_id = get_passport_id();
+        cout << '\n';
+
+        if (seating_plan.is_assigned(passport_id))
         {
-            const auto location = SeatLocation(row, column);
-            if (!seating_plan.is_occupied(location))
-            {
-                continue;
-            }
+            // Prints the ticket information of the passenger with a matching passport ID, if exists.
 
-            const auto passenger = *(seating_plan.at(location));
-            if (passenger.passport_id() != passport_id)
-            {
-                continue;
-            }
+            const auto location = *(seating_plan.location_of(passport_id));
 
-            string ticket_class;
-            if (row < 2)
-            {
-                ticket_class = "First";
-            }
-            else if (row < 7)
-            {
-                ticket_class = "Business";
-            }
-            else
-            {
-                ticket_class = "Economy";
-            }
+            cout << "A matching passenger was found!\n"
+                 << "Passenger Name: " << seating_plan.at(location)->name() << '\n'
+                 << "Passport    ID: " << passport_id << '\n'
+                 << "Seat  Location: " << location << " (" << to_string(location.ticket_class()) << " Class)\n"
+                 << '\n';
 
-            cout << "Passenger Name: " << passenger.name() << '\n'
-                 << "   Passport ID: " << passport_id << '\n'
-                 << " Seat Location: " << location << " (" << to_string(location.ticket_class()) << " Class)\n";
-
-            return;
+            wait_for_enter();
+        }
+        else
+        {
+            cout << "No matching passenger were found.\n";
         }
     }
-
-    cout << "No such passenger exist!\n";
+    while (get_confirmation("Do you want to search for another passenger?", true));
 }
 
 void show_details_class()
@@ -1041,6 +1033,11 @@ namespace jetassign::core
         return ((bool) seating_plan.at(row).at(column));
     }
 
+    bool SeatingPlan::is_assigned(const string &passport_id) const noexcept
+    {
+        return ((bool) this->location_of(passport_id));
+    }
+
     bool SeatingPlan::is_assigned(const Passenger &passenger) const noexcept
     {
         return ((bool) this->location_of(passenger));
@@ -1054,6 +1051,23 @@ namespace jetassign::core
     SeatingPlan::const_reference SeatingPlan::at(size_t row, size_t column) const
     {
         return seating_plan.at(row).at(column);
+    }
+
+    optional<SeatLocation> SeatingPlan::location_of(const string &passport_id) const
+    {
+        for (auto row = 0; row < JET_ROW_LENGTH; row++)
+        {
+            for (auto column = 0; column < JET_COLUMN_LENGTH; column++)
+            {
+                const auto maybe_passenger = seating_plan.at(row).at(column);
+                if (maybe_passenger && (maybe_passenger->passport_id() == passport_id))
+                {
+                    return SeatLocation(row, column);
+                }
+            }
+        }
+
+        return std::nullopt;
     }
 
     optional<SeatLocation> SeatingPlan::location_of(const Passenger &passenger) const
