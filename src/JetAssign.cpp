@@ -1454,19 +1454,28 @@ namespace stringutil
 
     vector<string> split(const string &input, const string &separator)
     {
+        // This function resembles JavaScript's String.prototype.split function.
+
+        /** The segments that were split from the input. */
         vector<string> segments;
 
         if (separator.empty())
         {
+            // Pushes the whole input as a segment if the separator was empty.
             segments.push_back(input);
         }
         else
         {
+            /** The starting position for each substr and find calls. */
             size_t start_pos = 0;
+
+            // Splits the input until it reaches its end.
             do
             {
+                /** One of the segment that was split from the input. */
                 auto segment = input.substr(start_pos, input.find(separator, start_pos) - start_pos);
 
+                // Pushes the segment to the list and updates the starting position.
                 segments.push_back(segment);
                 start_pos += segment.length() + separator.length();
             }
