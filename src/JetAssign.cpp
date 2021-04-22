@@ -215,6 +215,8 @@ namespace jetassign
                  **/
                 bool equals(const SeatLocation& other) const;
 
+                bool less_than(const SeatLocation &other) const;
+
                 /**
                  * Determine whether two instances represent the same seat location.
                  *
@@ -229,10 +231,7 @@ namespace jetassign
                  **/
                 bool operator !=(const SeatLocation &other) const { return !equals(other); }
 
-                bool operator <(const SeatLocation &other) const
-                {
-                    return ((m_row < other.m_row) || ((m_row == other.m_row) && (m_column < other.m_column)));
-                }
+                bool operator <(const SeatLocation &other) const { return less_than(other); }
 
                 string to_string() const;
 
@@ -1219,6 +1218,11 @@ namespace jetassign::core
     bool SeatLocation::equals(const SeatLocation& other) const
     {
         return ((m_row == other.m_row) && (m_column == other.m_column));
+    }
+
+    bool SeatLocation::less_than(const SeatLocation &other) const
+    {
+        return ((m_row < other.m_row) || ((m_row == other.m_row) && (m_column < other.m_column)));
     }
 
     string SeatLocation::to_string() const
