@@ -431,6 +431,27 @@ namespace jetassign
 
     namespace output
     {
+        template<size_t TSize>
+        using MenuOptions = array<string, TSize>;
+
+        /**
+         * @brief A container for storing menu and its fixed number of options.
+         * 
+         * @tparam TMenuSize Number of options.
+         **/
+        template<size_t TMenuSize>
+        struct Menu
+        {
+            /**
+             * The title of the menu.
+             **/
+            string                 title;
+            MenuOptions<TMenuSize> options;
+        };
+
+        template<size_t TMenuSize>
+        void print_menu(const Menu<TMenuSize>& menu);
+
         namespace messages
         {
             using std::vector;
@@ -540,8 +561,27 @@ int main(int argc, const char* argv[])
 long main_menu()
 {
     using jetassign::input::get_menu_option;
+    using jetassign::output::Menu;
+    using jetassign::output::print_menu;
 
-    return get_menu_option(6);
+    static const Menu<6> menu =
+    {
+        "Main Menu",
+        {{
+            "Add an assignment",
+            "Delete an assignment",
+            "Add assignments in batch",
+            "Show latest seating plan",
+            "Show details",
+            "Exit",
+        }},
+    };
+
+    print_menu(menu);
+    auto selection = get_menu_option(menu.options.size());
+    cout << "\n\n";
+    
+    return selection;
 }
 
 void add_an_assignment()
@@ -822,8 +862,24 @@ void show_latest_seating_plan()
 long show_details()
 {
     using jetassign::input::get_menu_option;
+    using jetassign::output::Menu;
+    using jetassign::output::print_menu;
 
-    return get_menu_option(3);
+    static const Menu<3> menu =
+    {
+        "Details",
+        {{
+            "Passenger",
+            "Class",
+            "Back",
+        }},
+    };
+
+    print_menu(menu);
+    auto selection = get_menu_option(menu.options.size());
+    cout << "\n\n";
+
+    return selection;
 }
 
 void show_details_passenger()
@@ -1106,6 +1162,24 @@ namespace jetassign::exceptions
 
 namespace jetassign::output
 {
+    template<size_t TMenuSize>
+    void print_menu(const Menu<TMenuSize>& menu)
+    {
+        cout << "*** " << menu.title << " ***\n";
+
+        const MenuOptions<TMenuSize> options = menu.options;
+
+        for (auto i = 0; i < options.size(); i++)
+        {
+            const auto   ordinal = i + 1;
+            const string option  = options.at(i);
+
+            cout << "[" << ordinal << "] " << option << '\n';
+        }
+
+        cout << "*****************" << endl;
+    }
+
     namespace messages
     {
         using std::to_string;
