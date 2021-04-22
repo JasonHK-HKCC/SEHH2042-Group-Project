@@ -477,6 +477,10 @@ void show_latest_seating_plan();
  **/
 void show_details(long selection);
 
+void show_details_passenger();
+
+void show_details_class();
+
 #ifndef _TEST
 int main(int argc, const char* argv[])
 {
@@ -793,130 +797,138 @@ void show_details(long selection)
 {
     if (selection == 1)
     {
-        //passenger
-        auto get_ID = jetassign::input::get_passport_id();
-
-        for (int r = 0; r < JET_ROW_LENGTH; r++)
-        {
-            for (int c = 0; c < JET_COLUMN_LENGTH; c++)
-            {
-                if (jetassign::seating_plan.is_occupied(r, c))
-                {
-                        const auto passenger = *(jetassign::seating_plan.at(r, c));
-                        auto ID = passenger.passport_id();
-                        auto name = passenger.name();
-                        auto location = *(jetassign::seating_plan.location_of(passenger));
-
-                        if (get_ID == ID)
-                        {
-                            if ((r >= 0) && (r <= 1))
-                            {
-                                cout << name << endl << ID << endl << "First Class" << endl  << location << endl << '\n';
-                            }
-                            else if ((r >= 2) && (r <= 6))
-                            {
-                                cout << name << endl << ID << endl << "Business Class" << endl << location << endl << '\n';
-                            }
-                            else
-                            {
-                                cout << name << endl <<  ID << endl << "Economy Class" << endl << location << endl << '\n';
-                            }
-                        }
-                        else
-                        {
-                            cout << "Error" << endl;
-                        }
-                }
-            }
-        }
+        show_details_passenger();
     }
     else
     {
-        //class
-        char class_type_firstclass[] = "First", class_type_business[] = "Business", class_type_Economy[] = "Economy", enter_class_type[10] = "";
-        cout << "First class: please enter First."
-            << endl << "Business class: please enter Business."
-            << endl << "Economy class: please enter Economy."
-            << endl;
-           cout << "Enter a particular class type: " << endl;
+        show_details_class();
+    }
+}
 
-        cin.getline(enter_class_type, 10, '\n');
+void show_details_passenger()
+{
+    using jetassign::seating_plan;
+    using jetassign::core::SeatLocation;
+    using jetassign::input::get_passport_id;
 
-        if (strcmp(enter_class_type, class_type_firstclass)==0)
-        {
-            for (int r = 0; r < JET_ROW_LENGTH; r++)
-            {
-                if ((r >= 0) && (r <= 1))
-                {
-                    for (int c = 0; c < JET_COLUMN_LENGTH; c++)
-                    {
-                        if (jetassign::seating_plan.is_occupied(r, c))
-                        {
-                            const auto passenger = *(jetassign::seating_plan.at(r, c));
-                            auto name = passenger.name();
-                            auto location = *(jetassign::seating_plan.location_of(passenger));
-                            cout << name << endl << location << endl << '\n';
-                        }
-                        else
-                        {
-                            cout << "vacant " << endl << '\n';
-                        }
-                    }
-                }
-            }
-        }
-        else if (strcmp(enter_class_type, class_type_business)==0)
-        {
-            for (int r = 0; r < JET_ROW_LENGTH; r++)
-            {
-                if ((r >= 2) && (r <= 6))
-                {
-                    for (int c = 0; c < JET_COLUMN_LENGTH; c++)
-                    {
-                        if (jetassign::seating_plan.is_occupied(r, c))
-                        {
-                            const auto passenger = *(jetassign::seating_plan.at(r, c));
-                            auto name = passenger.name();
-                            auto location = *(jetassign::seating_plan.location_of(passenger));
-                            cout << name << endl << location << endl << '\n';
-                        }
-                        else
-                        {
-                            cout << "vacant " << endl << '\n';
-                        }
-                    }
-                }
-            }
-        }
-        else if (strcmp(enter_class_type, class_type_Economy) == 0)
-        {
-            for (int r = 0; r < JET_ROW_LENGTH; r++)
-            {
-                if ((r >= 7) && (r <= 12))
-                {
-                    for (int c = 0; c < JET_COLUMN_LENGTH; c++)
-                    {
-                        if (jetassign::seating_plan.is_occupied(r, c))
-                        {
-                            const auto passenger = *(jetassign::seating_plan.at(r, c));
-                            auto name = passenger.name();                       
-                            auto location = *(jetassign::seating_plan.location_of(passenger));
-                            cout << name << endl << location << endl << '\n';
-                        }
-                        else
-                        {
-                            cout << "vacant " << endl << '\n';
-                        }
+    const auto passport_id = get_passport_id();
 
-                    }
-                }
-            }
-        }
-        else
+    for (auto row = 0; row < JET_ROW_LENGTH; row++)
+    {
+        for (auto column = 0; column < JET_COLUMN_LENGTH; column++)
         {
-            cout << "Error" << endl;
+            const auto location = SeatLocation(row, column);
+            if (!seating_plan.is_occupied(location))
+            {
+                continue;
+            }
+
+            const auto passenger = *(seating_plan.at(location));
+            if (passenger.passport_id() != passport_id)
+            {
+                continue;
+            }
+
+            string ticket_class;
+            if (row < 2)
+            {
+                ticket_class = "First";
+            }
+            else if (row < 7)
+            {
+                ticket_class = "Business";
+            }
+            else
+            {
+                ticket_class = "Economy";
+            }
+
+            cout << "Passenger Name: " << passenger.name() << '\n'
+                 << "   Passport ID: " << passport_id << '\n'
+                 << " Seat Location: " << location << " (" << ticket_class << " Class)\n";
+
+            return;
         }
     }
+
+    cout << "No such passenger exist!\n";
+}
+
+void show_details_class()
+{
+    using std::left;
+    using std::right;
+    using std::setw;
+
+    using jetassign::seating_plan;
+
+    using jetassign::core::SeatLocation;
+
+    using jetassign::input::get_menu_option;
+
+    size_t starting_row;
+    size_t ending_row;
+
+    switch (get_menu_option(4))
+    {
+        case 1:
+        {
+            starting_row = 0;
+            ending_row   = 2;
+            break;
+        }
+        case 2:
+        {
+            starting_row = 2;
+            ending_row   = 7;
+            break;
+        }
+        case 3:
+        {
+            starting_row = 7;
+            ending_row   = 13;
+            break;
+        }
+    }
+
+    static const auto kHorizontalSeparator = "  ";
+
+    static const auto kLocationColumnWidth = 4;
+    static const auto kPassengerNameColumnWidth = 70;
+
+    cout << left;
+
+    cout << string(80, '=') << '\n'
+         << kHorizontalSeparator
+         << setw(kLocationColumnWidth)      << "Seat"
+         << kHorizontalSeparator
+         << setw(kPassengerNameColumnWidth) << "Passenger Name"
+         << kHorizontalSeparator
+         << '\n'
+         << string(80, '-') << '\n';
+
+    for (auto row = starting_row; row < ending_row; row++)
+    {
+        for (auto column = 0; column < JET_COLUMN_LENGTH; column++)
+        {
+            const auto location = SeatLocation(row, column);
+
+            const auto passenger_name = seating_plan.is_occupied(location)
+                ? seating_plan.at(location)->name()
+                : "vacant";
+
+            cout << kHorizontalSeparator
+                 << right
+                 << setw(kLocationColumnWidth)      << location
+                 << left
+                 << kHorizontalSeparator
+                 << setw(kPassengerNameColumnWidth) << passenger_name
+                 << kHorizontalSeparator
+                 << '\n';
+        }
+    }
+    
+    cout << string(80, '=') << '\n';
 }
 
 namespace jetassign::core
