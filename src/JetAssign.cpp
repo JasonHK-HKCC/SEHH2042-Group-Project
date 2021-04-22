@@ -213,21 +213,26 @@ namespace jetassign
                  *
                  * @param other The other instance.
                  **/
-                bool equals(const SeatLocation &other) const;
+                bool equals(const SeatLocation& other) const;
 
                 /**
                  * Determine whether two instances represent the same seat location.
                  *
                  * @param other The other instance.
                  **/
-                bool operator==(const SeatLocation &other) const { return equals(other); }
+                bool operator ==(const SeatLocation &other) const { return equals(other); }
 
                 /**
                  * Determine whether two instances represent different seat location.
                  *
                  * @param other The other instance.
                  **/
-                bool operator!=(const SeatLocation &other) const { return !equals(other); }
+                bool operator !=(const SeatLocation &other) const { return !equals(other); }
+
+                bool operator <(const SeatLocation &other) const
+                {
+                    return ((m_row < other.m_row) || ((m_row == other.m_row) && (m_column < other.m_column)));
+                }
 
                 string to_string() const;
 
@@ -713,14 +718,14 @@ void add_assignments_in_batch()
 
         typedef vector<AssignmentRequest> RequestsVector;
 
-        map<SeatLocation, bool, std::not_equal_to<SeatLocation>> occupation_states;
+        map<SeatLocation, bool> occupation_states;
 
         RequestsVector valid_requests;
 
         RequestsVector invalid_requests_assigned;
         RequestsVector invalid_requests_occupied;
 
-        const auto is_occupied = [&](const SeatLocation &location)
+        const auto is_occupied = [&](const SeatLocation& location)
         {
             return occupation_states.count(location)
                 ? occupation_states[location]
@@ -1211,7 +1216,7 @@ namespace jetassign::core
         }
     }
 
-    bool SeatLocation::equals(const SeatLocation &other) const
+    bool SeatLocation::equals(const SeatLocation& other) const
     {
         return ((m_row == other.m_row) && (m_column == other.m_column));
     }
