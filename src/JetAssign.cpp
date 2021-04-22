@@ -452,6 +452,8 @@ namespace jetassign
     auto seating_plan = core::SeatingPlan();
 }
 
+long main_menu();
+
 /**
  * R1: Add an assignment
  **/
@@ -475,19 +477,21 @@ void show_latest_seating_plan();
 /**
  * R5: Show details
  **/
-void show_details(long selection);
+long show_details();
 
 void show_details_passenger();
 
 void show_details_class();
 
+void save_and_exit();
+
 #ifndef _TEST
 int main(int argc, const char* argv[])
 {
     long selection;
-    while ((selection = jetassign::input::get_menu_option(6)) != 6)
+    do
     {
-        switch (selection)
+        switch ((selection = main_menu()))
         {
             case 1:
                 add_an_assignment();
@@ -504,19 +508,41 @@ int main(int argc, const char* argv[])
             case 5:
             {
                 long details_selection;
-                while ((details_selection = jetassign::input::get_menu_option(3)) != 3)
+                do
                 {
-                    show_details(details_selection);
+                    switch ((details_selection = show_details()))
+                    {
+                        case 1:
+                            show_details_passenger();
+                            break;
+                        case 2:
+                            show_details_class();
+                            break;
+                        case 3:
+                            break;
+                    }
                 }
+                while (details_selection != 3);
 
                 break;
             }
+            case 6:
+                save_and_exit();
+                break;
         }
     }
+    while (selection != 6);
 
     return 0;
 }
 #endif
+
+long main_menu()
+{
+    using jetassign::input::get_menu_option;
+
+    return get_menu_option(6);
+}
 
 void add_an_assignment()
 {
@@ -793,16 +819,11 @@ void show_latest_seating_plan()
     return jetassign::input::wait_for_enter();
 }
 
-void show_details(long selection)
+long show_details()
 {
-    if (selection == 1)
-    {
-        show_details_passenger();
-    }
-    else
-    {
-        show_details_class();
-    }
+    using jetassign::input::get_menu_option;
+
+    return get_menu_option(3);
 }
 
 void show_details_passenger()
@@ -929,6 +950,11 @@ void show_details_class()
     }
     
     cout << string(80, '=') << '\n';
+}
+
+void save_and_exit()
+{
+    
 }
 
 namespace jetassign::core
