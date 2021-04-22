@@ -112,6 +112,13 @@ namespace jetassign
      **/
     namespace core
     {
+        enum class TicketClass
+        {
+            kFirst,
+            kBusiness,
+            kEconomy,
+        };
+
         /**
          * Represents a passenger.
          **/
@@ -196,6 +203,8 @@ namespace jetassign
                  * Returns the column location of the seat.
                  **/
                 size_t column() const { return m_column; }
+
+                TicketClass ticket_class() const;
 
                 /**
                  * Determine whether two instances represent the same seat location.
@@ -295,6 +304,8 @@ namespace jetassign
                  **/
                 array<array<optional<Passenger>, JET_COLUMN_LENGTH>, JET_ROW_LENGTH> seating_plan;
         };
+
+        string to_string(TicketClass ticket_class) noexcept;
     }
 
     /**
@@ -886,6 +897,7 @@ void show_details_passenger()
 {
     using jetassign::seating_plan;
     using jetassign::core::SeatLocation;
+    using jetassign::core::to_string;
     using jetassign::input::get_passport_id;
 
     const auto passport_id = get_passport_id();
@@ -922,7 +934,7 @@ void show_details_passenger()
 
             cout << "Passenger Name: " << passenger.name() << '\n'
                  << "   Passport ID: " << passport_id << '\n'
-                 << " Seat Location: " << location << " (" << ticket_class << " Class)\n";
+                 << " Seat Location: " << location << " (" << to_string(location.ticket_class()) << " Class)\n";
 
             return;
         }
@@ -1010,7 +1022,7 @@ void show_details_class()
 
 void save_and_exit()
 {
-    
+
 }
 
 namespace jetassign::core
@@ -1134,6 +1146,22 @@ namespace jetassign::core
         }
     }
 
+    TicketClass SeatLocation::ticket_class() const
+    {
+        if (m_row < 2)
+        {
+            return TicketClass::kFirst;
+        }
+        else if (m_row < 7)
+        {
+            return TicketClass::kBusiness;
+        }
+        else
+        {
+            return TicketClass::kEconomy;
+        }
+    }
+
     bool SeatLocation::equals(const SeatLocation &other) const
     {
         return ((m_row == other.m_row) && (m_column == other.m_column));
@@ -1153,6 +1181,19 @@ namespace jetassign::core
     #undef COLUMN_RANGE_ERROR_MESSAGE
     #undef ROW_RANGE_ERROR_MESSAGE
     #undef RANGE_ERROR_MESSAGE
+
+    string to_string(TicketClass ticket_class) noexcept
+    {
+        switch (ticket_class)
+        {
+            case TicketClass::kFirst:
+                return "First";
+            case TicketClass::kBusiness:
+                return "Business";
+            case TicketClass::kEconomy:
+                return "Economy";
+        }
+    }
 }
 
 namespace jetassign::exceptions
