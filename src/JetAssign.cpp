@@ -705,13 +705,18 @@ void add_assignments_in_batch()
 
     do
     {
+        cout << SECTION_SEPARATOR
+             << "Assign multiple passengers to the seating plan at once.\n"
+             << '\n';
+
         auto requests = get_compact_assignments();
-        cout << '\n';
 
         // Jump to the end of the loop early if no requests were received.
         if (requests.size() == 0)
         {
-            cout << "No requests could be committed.\n";
+            cout << '\n'
+                 << "No requests could be committed.\n";
+
             continue;
         }
 
@@ -731,6 +736,7 @@ void add_assignments_in_batch()
                 : seating_plan.is_occupied(location);
         };
 
+        auto newline_before_reassignment_confirmation = true;
         for (auto request : requests)
         {
             auto passenger = request.passenger();
@@ -740,6 +746,12 @@ void add_assignments_in_batch()
             {
                 auto assigned_location = *(seating_plan.location_of(passenger));
                 occupation_states[assigned_location] = true;
+
+                if (newline_before_reassignment_confirmation)
+                {
+                    cout << '\n';
+                    newline_before_reassignment_confirmation = false;
+                }
 
                 if (!get_confirmation(messages::confirm_reassignment_for_assigned_passenger(passenger, assigned_location, location), true))
                 {
@@ -788,16 +800,17 @@ void add_assignments_in_batch()
         // List the valid requests, if any.
         if (valid_count > 0)
         {
-            cout << "These requests will be committed:\n";
-            print_requests_list(valid_requests);
+            cout << '\n'
+                 << "These requests will be committed:\n";
 
-            cout << '\n';
+            print_requests_list(valid_requests);
         }
 
         // List the invalid requests, if any.
         if ((invalid_assigned_count > 0) || (invalid_occupied_count > 0))
         {
-            cout << "These requests will be dropped:\n";
+            cout << '\n'
+                 << "These requests will be dropped:\n";
 
             if (invalid_assigned_count > 0)
             {
@@ -810,18 +823,18 @@ void add_assignments_in_batch()
                 cout << "- Seat was occupied:\n";
                 print_requests_list(invalid_requests_occupied, 1);
             }
-
-            cout << '\n';
         }
 
         // Jump to the end of the loop early if no valid requests.
         if (valid_count == 0)
         {
-            cout << "No requests could be committed.\n";
+            cout << '\n'
+                 << "No requests could be committed.\n";
+
             continue;
         }
 
-        if (get_confirmation("Are you sure to commit the requests?", true))
+        if (get_confirmation("\nAre you sure to commit the requests?", true))
         {
             for (auto request : valid_requests)
             {
@@ -833,11 +846,13 @@ void add_assignments_in_batch()
                 seating_plan.assign(request.location(), request.passenger());
             }
 
-            cout << messages::report_committed_requests(valid_count) << '\n';
+            cout << messages::report_committed_requests(valid_count) << '\n'
+                 << '\n';
         }
         else
         {
-            cout << "Cancelled, no requests were committed.\n";
+            cout << "Cancelled, no requests were committed.\n"
+                 << '\n';
         }
     }
     while (get_confirmation("Do you want to assign another batch of passengers?", true));
