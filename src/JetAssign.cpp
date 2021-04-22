@@ -962,17 +962,6 @@ void show_details_class()
     using jetassign::output::Menu;
     using jetassign::output::print_menu;
 
-    static const Menu<4> menu =
-    {
-        "Ticket Class",
-        {{
-            "First Class",
-            "Business Class",
-            "Economy Class",
-            "Back",
-        }},
-    };
-
     do
     {
         cout << SECTION_SEPARATOR
@@ -981,6 +970,17 @@ void show_details_class()
 
         size_t starting_row;
         size_t ending_row;
+
+        static const Menu<4> menu =
+        {
+            "Ticket Class",
+            {{
+                "First Class",
+                "Business Class",
+                "Economy Class",
+                "Back",
+            }},
+        };
 
         print_menu(menu);
         switch (get_menu_option(menu.options.size()))
