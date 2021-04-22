@@ -598,7 +598,7 @@ long main_menu()
     using jetassign::output::print_menu;
 
     cout << SECTION_SEPARATOR;
-    
+
     static const Menu<6> menu =
     {
         "Main Menu",
@@ -846,6 +846,11 @@ void show_latest_seating_plan()
     using std::setw;
 
     using jetassign::seating_plan;
+    using jetassign::input::wait_for_enter;
+
+    cout << SECTION_SEPARATOR
+         << "This is the latest overall seat assignment for the plane:\n"
+         << '\n';
 
     static const auto kColumnWidth = 3;
     static const auto kFirstColumnWidth = 3;
@@ -872,6 +877,7 @@ void show_latest_seating_plan()
         // Prints the row number.
         cout << setw(kFirstColumnWidth) << (row + 1);
 
+        // Prints the occupation state of each column for the row.
         for (auto column = 0; column < JET_COLUMN_LENGTH; column++)
         {
             cout << setw(kColumnWidth) << (seating_plan.is_occupied(row, column) ? kOccupiedSymbol : kEmptySymbol);
@@ -882,13 +888,14 @@ void show_latest_seating_plan()
     cout << '\n';
 
     // Prints the legend for the seating plan.
-    cout << "Legend\n"
-         << left
+    cout << left
+         << "Legend:\n"
          << setw(kLegendSymbolWidth) << kEmptySymbol    << setw(kLegendSymbolNameWidth) << "Empty"
          << setw(kLegendSymbolWidth) << kOccupiedSymbol << setw(kLegendSymbolNameWidth) << "Occupied"
+         << '\n'
          << '\n';
 
-    return jetassign::input::wait_for_enter();
+    wait_for_enter("Press ENTER to return to the main menu...");
 }
 
 long show_details()
