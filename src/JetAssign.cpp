@@ -586,8 +586,10 @@ int main(int argc, const char* argv[])
         R"( /_/   \_\___/___/_|\__, |_| |_|_| |_| |_|\___|_| |_|\__|    VERSION 1.0.0      )" "\n"
         R"(                    |___/                                                       )" "\n";
 
+    // Prints the welcome message.
     cout << welcome_message;
 
+    /** The user's selection in the main menu. */
     long selection;
     do
     {
@@ -596,17 +598,22 @@ int main(int argc, const char* argv[])
             case 1:
                 add_an_assignment();
                 break;
+
             case 2:
                 delete_an_assignment();
                 break;
+
             case 3:
                 add_assignments_in_batch();
                 break;
+
             case 4:
                 show_latest_seating_plan();
                 break;
+
             case 5:
             {
+                /** The user's selection in the "show details" menu. */
                 long details_selection;
                 do
                 {
@@ -615,9 +622,11 @@ int main(int argc, const char* argv[])
                         case 1:
                             show_details_passenger();
                             break;
+
                         case 2:
                             show_details_class();
                             break;
+
                         case 3:
                             break;
                     }
