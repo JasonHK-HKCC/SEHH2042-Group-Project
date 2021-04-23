@@ -1031,7 +1031,7 @@ void add_assignments_in_batch()
     {
         cout << SECTION_SEPARATOR
              << "Assign multiple passengers to the seating plan at once.\n"
-             << R"(The assignment entry should be formatted as "<Name>/<Passport ID>/<Seat Location>", for example "Chan Tai Man/HK12345678A/10D".)"
+             << R"(The assignment entry should be formatted as "<Name>/<Passport ID>/<Seat Location>", for example "Chan Tai Man/HK12345678A/10D".)" "\n"
              << "Note that previous requests for the same passenger will be replaced by the new one.\n"
              << '\n';
 
@@ -1425,7 +1425,7 @@ void show_details_class()
 
                 const auto passenger_name = seating_plan.is_occupied(location)
                     ? seating_plan.at(location)->name()
-                    : "**vacant**";
+                    : "[vacant]";
 
                 cout << "| "
                         // The "Seat" column.
