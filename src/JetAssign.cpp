@@ -724,8 +724,17 @@ namespace jetassign
         template<size_t TMenuSize>
         void print_menu(const Menu<TMenuSize>& menu);
 
+        /**
+         * Build a progress bar.
+         *
+         * @param progress The current progress.
+         * @param size     The size of the progress bar.
+         **/
         string build_progress_bar(size_t progress, size_t size);
 
+        /**
+         * The output messages component.
+         **/
         namespace messages
         {
             using std::vector;
@@ -991,6 +1000,8 @@ void add_assignments_in_batch()
     {
         cout << SECTION_SEPARATOR
              << "Assign multiple passengers to the seating plan at once.\n"
+             << R"(The assignment entry should be formatted as "<Name>/<Passport ID>/<Seat Location>", for example "Chan Tai Man/HK12345678A/10D".)"
+             << "Note that previous requests for the same passenger will be replaced by the new one.\n"
              << '\n';
 
         /** The list of assignmnet requests. */
@@ -1924,6 +1935,8 @@ namespace jetassign::input
             try
             {
                 auto request = parsers::parse_compact_assignment(input);
+
+                // Removes the previous requests for this passenger, if any.
                 requests.erase(
                     std::remove_if(
                         requests.begin(),
@@ -1975,12 +1988,16 @@ namespace jetassign::input
         {
             using std::regex;
 
+            /** Regex pattern for menu options. */
             const regex kMenuOptionPattern(R"((\d+))");
 
+            /** Regex pattern for passport ID. */
             const regex kPassportIdPattern("([0-9A-Z]+)", regex::icase);
 
+            /** Regex pattern for seat location. */
             const regex kSeatLocationPattern("(1[0-3]|[1-9])([A-F])");
 
+            /** Separator for compact assignment. */
             const auto kCompactAssignmentSeparator = "/";
         }
 
@@ -1992,6 +2009,7 @@ namespace jetassign::input
                 throw EmptyInputError("Please enter a command.");
             }
 
+            // Check the first character only.
             switch (confirmation.at(0))
             {
                 case 'Y':
@@ -2032,6 +2050,7 @@ namespace jetassign::input
                 throw MalformedInputError("Only numeric characters were allowed.");
             }
 
+            // Parse the string into long.
             return std::stol(selection);
         }
 
