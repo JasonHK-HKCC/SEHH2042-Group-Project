@@ -775,6 +775,7 @@ void add_assignments_in_batch()
              << "Assign multiple passengers to the seating plan at once.\n"
              << '\n';
 
+        /** The list of assignmnet requests. */
         auto requests = get_compact_assignments();
 
         // Jump to the end of the loop early if no requests were received.
@@ -788,62 +789,94 @@ void add_assignments_in_batch()
 
         typedef vector<AssignmentRequest> RequestsVector;
 
-        map<SeatLocation, bool> occupation_states;
+        /** The occupation state when the valid requests were committed. */
+        map<SeatLocation, bool> occupation_state;
 
+        /** The list of valid requests. */
         RequestsVector valid_requests;
 
+        /** The list of invalid requests, which is because the passenger was assigned a seat. */
         RequestsVector invalid_requests_assigned;
+        /** The list of invalid requests, which is because the seat was occupied. */
         RequestsVector invalid_requests_occupied;
 
+        /**
+         * Determine whether the seat was occupied.
+         *
+         * @param location The location of the seat.
+         **/
         const auto is_occupied = [&](const SeatLocation& location)
         {
-            return occupation_states.count(location)
-                ? occupation_states[location]
+            return occupation_state.count(location)
+                ? occupation_state[location]
                 : seating_plan.is_occupied(location);
         };
 
         auto newline_before_reassignment_confirmation = true;
         for (auto request : requests)
         {
+            /** The requesting passenger. */
             auto passenger = request.passenger();
+            /** The location of the requested seat. */
             auto location = request.location();
 
             if (seating_plan.is_assigned(request.passenger()))
             {
+                // Things to do if the passenger was already assigned.
+
+                /** The assigned seat of the passenger in the seating plan. */
                 auto assigned_location = *(seating_plan.location_of(passenger));
-                occupation_states[assigned_location] = true;
+                // Marks the assigned seat as occupied.
+                occupation_state[assigned_location] = true;
 
                 if (newline_before_reassignment_confirmation)
                 {
+                    // Add a newline character before the first confirmation.
+
                     cout << '\n';
                     newline_before_reassignment_confirmation = false;
                 }
 
                 if (!get_confirmation(messages::confirm_reassignment_for_assigned_passenger(passenger, assigned_location, location), true))
                 {
+                    // Invalid request if the operator not intended to reassign the seat.
+
                     invalid_requests_assigned.push_back(request);
                 }
                 else if (is_occupied(location))
                 {
-                    occupation_states[location] = true;
+                    // Invalid request if the requested seat was occupied.
+
+                    // Marks the requested seat as occupied.
+                    occupation_state[location] = true;
                     invalid_requests_occupied.push_back(request);
                 }
                 else
                 {
-                    occupation_states[assigned_location] = false;
-                    occupation_states[location] = true;
+                    // Otherwise, valid request.
+
+                    // Marks the assigned seat as free.
+                    occupation_state[assigned_location] = false;
+                    // Marks the requested seat as occupied.
+                    occupation_state[location] = true;
 
                     valid_requests.push_back(request);
                 }
             }
             else if (is_occupied(location))
             {
-                occupation_states[location] = true;
+                // Invalid request if the requested seat was occupied.
+
+                // Marks the requested seat as occupied.
+                occupation_state[location] = true;
                 invalid_requests_occupied.push_back(request);
             }
             else
             {
-                occupation_states[location] = true;
+                // Otherwise, valid request.
+
+                // Marks the requested seat as occupied.
+                occupation_state[location] = true;
                 valid_requests.push_back(request);
             }
         }
@@ -855,6 +888,12 @@ void add_assignments_in_batch()
         /** The number of invalid requests, which is because the seat was occupied. */
         const auto invalid_occupied_count = invalid_requests_occupied.size();
 
+        /**
+         * Prints the list of requests in point form.
+         *
+         * @param requests The list of requests.
+         * @param depth    The left padding of the list.
+         */
         const auto print_requests_list = [](const RequestsVector& requests, size_t depth = 0)
         {
             for (auto request : requests)
@@ -902,6 +941,8 @@ void add_assignments_in_batch()
 
         if (get_confirmation("\nAre you sure to commit the requests?", true))
         {
+            // Commit the valid requests if confirmed.
+
             for (auto request : valid_requests)
             {
                 if (seating_plan.is_assigned(request.passenger()))
