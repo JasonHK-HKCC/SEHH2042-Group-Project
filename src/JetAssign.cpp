@@ -397,32 +397,79 @@ namespace jetassign
         using core::Passenger;
         using core::SeatLocation;
 
+        /**
+         * Represents an assignmnet request.
+         **/
         class AssignmentRequest
         {
             public:
+                /**
+                 * Initialize an assignmnet request with a passenger and seat location.
+                 **/
                 AssignmentRequest(const Passenger &passenger, const SeatLocation &location);
 
+                /**
+                 * Initialize an assignmnet request with a passenger name, passport ID and seat location.
+                 **/
                 AssignmentRequest(const string &passenger_name, const string &passport_id, const SeatLocation &seat_location);
 
+                /**
+                 * Returns the requesting passanger.
+                 **/
                 Passenger passenger() const { return m_passenger; }
 
+                /**
+                 * Returns the requested seat location.
+                 **/
                 SeatLocation location() const { return m_location; }
 
+                /**
+                 * Determine whether two instances represent the assignmnet request for the same passenger.
+                 *
+                 * @param other The other instance.
+                 **/
                 bool is_same_passenger(const AssignmentRequest &other) const;
 
+                /**
+                 * Determine whether two instances represent the same assignmnet request.
+                 *
+                 * @param other The other instance.
+                 **/
                 bool equals(const AssignmentRequest &other) const;
 
+                /**
+                 * Determine whether two instances represent the same assignmnet request.
+                 *
+                 * @param other The other instance.
+                 **/
                 bool operator ==(const AssignmentRequest &other) const { return equals(other); }
 
+                /**
+                 * Determine whether two instances represent different assignmnet request.
+                 *
+                 * @param other The other instance.
+                 **/
                 bool operator !=(const AssignmentRequest &other) const { return !equals(other); }
 
                 string to_string() const;
 
             private:
+                /**
+                 * The requesting passanger.
+                 **/
                 Passenger m_passenger;
+
+                /**
+                 * The requested seat location.
+                 **/
                 SeatLocation m_location;
         };
 
+        /**
+         * Prompt and wait for the user to press ENTER.
+         * 
+         * @param message The message to print.
+         **/
         void wait_for_enter(const string &message = "Press ENTER to continue...");
 
         /**
@@ -430,22 +477,59 @@ namespace jetassign
          **/
         string read_line();
 
+        /**
+         * Get the yes/no confirmation from the user.
+         * 
+         * @param message The message to print.
+         **/
         bool get_confirmation(const string& message);
 
+        /**
+         * Get the yes/no confirmation from the user.
+         * 
+         * @param message       The message to print.
+         * @param default_value The default confirmation.
+         **/
         bool get_confirmation(const string& message, bool default_value);
 
+        /**
+         * Get the menu selection from the user. The default minimum value is 1.
+         * 
+         * @param max The maximum value.
+         **/
         long get_menu_option(long max);
 
+        /**
+         * Get the menu selection from the user.
+         * 
+         * @param min The minimum value.
+         * @param max The maximum value.
+         **/
         long get_menu_option(long min, long max);
 
+        /**
+         * Get the passenger name from the user.
+         **/
         string get_passenger_name();
 
+        /**
+         * Get the passport ID from the user.
+         **/
         string get_passport_id();
 
+        /**
+         * Get the passenger name and passport ID from the user.
+         **/
         Passenger get_passenger();
 
+        /**
+         * Get the seat location from the user.
+         **/
         SeatLocation get_seat_location();
 
+        /**
+         * Get the list of assignmnet requests from the user.
+         **/
         vector<AssignmentRequest> get_compact_assignments();
 
         /**
@@ -453,22 +537,61 @@ namespace jetassign
          **/
         namespace parsers
         {
+            /**
+             * Parse the yes/no confirmation from the input.
+             * 
+             * @param input The user's input.
+             **/
             bool parse_confirmation(const string &input);
 
+            /**
+             * Parse the yes/no confirmation from the input.
+             * 
+             * @param input         The user's input.
+             * @param default_value The default confirmation.
+             **/
             bool parse_confirmation(const string &input, bool default_value);
 
+            /**
+             * Parse the menu selection from the input.
+             * 
+             * @param input The user's input.
+             **/
             long parse_menu_option(const string &input);
 
+            /**
+             * Parse the passenger name from the input.
+             * 
+             * @param input The user's input.
+             **/
             string parse_passenger_name(const string &input);
 
+            /**
+             * Parse the passport ID from the input.
+             * 
+             * @param input The user's input.
+             **/
             string parse_passport_id(const string &input);
 
+            /**
+             * Parse the seat location from the input.
+             * 
+             * @param input The user's input.
+             **/
             SeatLocation parse_seat_location(const string &input);
 
+            /**
+             * Parse the passenger name, passport ID, and seat location from the input.
+             * 
+             * @param input The user's input.
+             **/
             AssignmentRequest parse_compact_assignment(const string &input);
         }
     }
 
+    /**
+     * The output component.
+     **/
     namespace output
     {
         template<size_t TSize>
@@ -485,28 +608,61 @@ namespace jetassign
             /**
              * The title of the menu.
              **/
-            string                 title;
+            string title;
+
+            /**
+             * The options of the menu.
+             **/
             MenuOptions<TMenuSize> options;
         };
 
+        /**
+         * The spinner for the progress bar.
+         **/
         class Spinner
         {
             public:
+                /**
+                 * The default set of frames.
+                 **/
                 static constexpr auto default_spinner = R"(|/-\)";
 
+                /**
+                 * Initialize a spinner with the default frames.
+                 **/
                 Spinner();
 
+                /**
+                 * Initialize a spinner with a custom set of frames.
+                 **/
                 Spinner(string spinner);
 
+                /**
+                 * Returns the frame of the spinner.
+                 **/
                 char spinner() const;
 
+                /**
+                 * Returns the frame and spins the spinner.
+                 * 
+                 * @param frozen Whether to update the animation.
+                 **/
                 char spin(bool frozen = false);
 
+                /**
+                 * Pipe the frame and spins the spinner.
+                 **/
                 friend std::ostream& operator<<(std::ostream& os, Spinner& spinner);
 
             private:
+                /**
+                 * The frames of the spinner.
+                 **/
                 string m_spinner;
 
+                /**
+                 * The index of the current frame.
+                 **/
                 size_t m_index;
         };
 
