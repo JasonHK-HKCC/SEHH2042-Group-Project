@@ -697,6 +697,8 @@ void add_an_assignment()
 
     do
     {
+        cout << SECTION_SEPARATOR;
+
         auto passenger = get_passenger();
 
         auto location = get_seat_location();
