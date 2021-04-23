@@ -14,14 +14,17 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <iomanip>
 #include <iostream>
 #include <limits>
 #include <map>
 #include <optional>
+#include <random>
 #include <regex>
 #include <set>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include <climits>
@@ -470,8 +473,31 @@ namespace jetassign
             MenuOptions<TMenuSize> options;
         };
 
+        class Spinner
+        {
+            public:
+                static constexpr auto default_spinner = R"(|/-\)";
+
+                Spinner();
+
+                Spinner(string spinner);
+
+                char spinner() const;
+
+                char spin(bool frozen = false);
+
+                friend std::ostream& operator<<(std::ostream& os, Spinner& spinner);
+
+            private:
+                string m_spinner;
+
+                size_t m_index;
+        };
+
         template<size_t TMenuSize>
         void print_menu(const Menu<TMenuSize>& menu);
+
+        string build_progress_bar(size_t progress, size_t size);
 
         namespace messages
         {
@@ -541,7 +567,7 @@ int main(int argc, const char* argv[])
         R"(    / \   ___ ___(_) __ _ _ __  _ __ ___   ___ _ __ | |_                        )" "\n"
         R"(   / _ \ / __/ __| |/ _` | '_ \| '_ ` _ \ / _ \ '_ \| __|                       )" "\n"
         R"(  / ___ \\__ \__ \ | (_| | | | | | | | | |  __/ | | | |_                        )" "\n"
-        R"( /_/   \_\___/___/_|\__, |_| |_|_| |_| |_|\___|_| |_|\__|    Version 1.0.0      )" "\n"
+        R"( /_/   \_\___/___/_|\__, |_| |_|_| |_| |_|\___|_| |_|\__|    VERSION 1.0.0      )" "\n"
         R"(                    |___/                                                       )" "\n";
 
     cout << welcome_message;
@@ -1068,7 +1094,72 @@ void show_details_class()
 
 void save_and_exit()
 {
+    using std::flush;
+    using std::left;
+    using std::right;
+    using std::setw;
 
+    using std::random_device;
+    using std::default_random_engine;
+    using std::uniform_int_distribution;
+
+    using namespace std::chrono_literals;
+
+    using jetassign::input::wait_for_enter;
+    using jetassign::output::Spinner;
+    using jetassign::output::build_progress_bar;
+
+    namespace this_thread = std::this_thread;
+
+    cout << SECTION_SEPARATOR
+         << "Upload the seating plan to the central database.\n"
+         << '\n';
+
+    const auto execute_operation = [](const string& operation, int max_step)
+    {
+        random_device device;
+        default_random_engine engine(device());
+
+        auto spinner = Spinner();
+
+        const auto print_progress = [&](size_t progress)
+        {
+            if (progress > 100) { progress = 100; }
+            const auto is_finished = (progress == 100);
+
+            cout << '\r'
+                 << (is_finished ? 'O' : spinner.spin()) << " "
+                 << operation << ": "
+                 << build_progress_bar(progress, 58) << " "
+                 << setw(3) << right << progress << '%'
+                 << (is_finished ? '\n' : '\0')
+                 << flush;
+        };
+
+        size_t progress = 0;
+        print_progress(progress);
+
+        uniform_int_distribution progress_step(1, max_step);
+        uniform_int_distribution progress_freeze(0, 3);
+
+        do
+        {
+            this_thread::sleep_for(100ms);
+
+            if (!progress_freeze(engine)) { progress += progress_step(engine); }
+            print_progress(progress);
+        }
+        while (progress < 100);
+    };
+
+    execute_operation("Preparing", 40);
+    execute_operation("Uploading", 15);
+
+    cout << '\n'
+         << "The seating plan was uploaded to the central database successfully!\n"
+         << SECTION_SEPARATOR;
+
+    wait_for_enter("Press ENTER to leave the application...");
 }
 
 namespace jetassign::core
@@ -1276,6 +1367,32 @@ namespace jetassign::exceptions
 
 namespace jetassign::output
 {
+    using std::range_error;
+
+    Spinner::Spinner() : Spinner(default_spinner) {}
+
+    Spinner::Spinner(string spinner)
+        : m_spinner { spinner }, m_index { 0 } {}
+
+    char Spinner::spinner() const
+    {
+        return (m_spinner.size() == 0) ? '\0' : m_spinner[m_index % m_spinner.size()];
+    }
+
+    char Spinner::spin(bool frozen)
+    {
+        if (m_spinner.size() == 0) { return '\0'; }
+
+        const auto index = (frozen ? m_index : m_index++) % m_spinner.size();
+        return m_spinner[index];
+    }
+
+    std::ostream& operator<<(std::ostream& os, Spinner& spinner)
+    {
+        os << spinner.spin();
+        return os;
+    }
+
     template<size_t TMenuSize>
     void print_menu(const Menu<TMenuSize>& menu)
     {
@@ -1292,6 +1409,29 @@ namespace jetassign::output
         }
 
         cout << "*****************" << endl;
+    }
+
+    string build_progress_bar(size_t progress, size_t size)
+    {
+        if (size < 3)
+        {
+            throw range_error("The minimum size of the progress bar is 3.");
+        }
+
+        if (progress > 100) { progress = 100; }
+        const auto is_finished = (progress == 100);
+
+        const size_t progress_size = size - 2;
+        const size_t progress_filled_size = progress_size * (progress / 100.0);
+        const size_t progress_empty_size = progress_size - progress_filled_size - (is_finished ? 0 : 1);
+
+        string progress_bar;
+        return progress_bar
+            .append("[")
+            .append(string(progress_filled_size, '='))
+            .append(string(!is_finished, '>'))
+            .append(string(progress_empty_size, ' '))
+            .append("]");
     }
 
     namespace messages
