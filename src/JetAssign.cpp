@@ -133,10 +133,16 @@ namespace jetassign
      **/
     namespace core
     {
+        /**
+         * The class of a ticket.
+         **/
         enum class TicketClass
         {
+            /** First class. */
             kFirst,
+            /** Business class. */
             kBusiness,
+            /** Economy class. */
             kEconomy,
         };
 
@@ -234,6 +240,11 @@ namespace jetassign
                  **/
                 bool equals(const SeatLocation& other) const;
 
+                /**
+                 * Determine whether this instance less than the other.
+                 *
+                 * @param other The other instance.
+                 **/
                 bool less_than(const SeatLocation &other) const;
 
                 /**
@@ -250,6 +261,11 @@ namespace jetassign
                  **/
                 bool operator !=(const SeatLocation &other) const { return !equals(other); }
 
+                /**
+                 * Determine whether this instance less than the other.
+                 *
+                 * @param other The other instance.
+                 **/
                 bool operator <(const SeatLocation &other) const { return less_than(other); }
 
                 string to_string() const;
@@ -288,12 +304,25 @@ namespace jetassign
                  **/
                 bool is_occupied(const SeatLocation &location) const noexcept;
 
+                /**
+                 * Determine whether the seat was already occupied by a passenger.
+                 *
+                 * @param row    The row of the seat.
+                 * @param column The column of the seat.
+                 **/
                 bool is_occupied(size_t row, size_t column) const noexcept;
 
+                /**
+                 * Determine whether the passenger was already assigned a seat.
+                 *
+                 * @param passport_id The passport ID of a passenger to check.
+                 **/
                 bool is_assigned(const string &passport_id) const noexcept;
 
                 /**
-                 * Determine whether a seat was already assigned to the passenger.
+                 * Determine whether the passenger was already assigned a seat.
+                 *
+                 * @param passenger The passenger to check.
                  **/
                 bool is_assigned(const Passenger &passenger) const noexcept;
 
@@ -304,10 +333,26 @@ namespace jetassign
                  **/
                 const const_reference at(const SeatLocation &location) const;
 
+                /**
+                 * Returns the passenger who was assigned to the given seat.
+                 *
+                 * @param row    The row of the seat.
+                 * @param column The column of the seat.
+                 **/
                 const const_reference at(size_t row, size_t column) const;
 
+                /**
+                 * Returns the seat location of a passenger.
+                 *
+                 * @param passport_id The passport ID of a passenger to check.
+                 **/
                 optional<SeatLocation> location_of(const string &passport_id) const;
 
+                /**
+                 * Returns the seat location of a passenger.
+                 *
+                 * @param passenger The passenger to check.
+                 **/
                 optional<SeatLocation> location_of(const Passenger &passenger) const;
 
                 /**
@@ -325,6 +370,11 @@ namespace jetassign
                  **/
                 void remove(const SeatLocation &location);
 
+                /**
+                 * Remove a specific passenger from the seating plan.
+                 *
+                 * @param passenger The passenger to remove.
+                 **/
                 void remove(const Passenger &passenger);
 
             private:
@@ -334,6 +384,11 @@ namespace jetassign
                 array<array<optional<Passenger>, JET_COLUMN_LENGTH>, JET_ROW_LENGTH> seating_plan;
         };
 
+        /**
+         * Converts the ticket class to a string.
+         *
+         * @param ticket_class The ticket class to convert.
+         **/
         string to_string(TicketClass ticket_class) noexcept;
     }
 
@@ -467,7 +522,7 @@ namespace jetassign
 
         /**
          * Prompt and wait for the user to press ENTER.
-         * 
+         *
          * @param message The message to print.
          **/
         void wait_for_enter(const string &message = "Press ENTER to continue...");
@@ -479,14 +534,14 @@ namespace jetassign
 
         /**
          * Get the yes/no confirmation from the user.
-         * 
+         *
          * @param message The message to print.
          **/
         bool get_confirmation(const string& message);
 
         /**
          * Get the yes/no confirmation from the user.
-         * 
+         *
          * @param message       The message to print.
          * @param default_value The default confirmation.
          **/
@@ -494,14 +549,14 @@ namespace jetassign
 
         /**
          * Get the menu selection from the user. The default minimum value is 1.
-         * 
+         *
          * @param max The maximum value.
          **/
         long get_menu_option(long max);
 
         /**
          * Get the menu selection from the user.
-         * 
+         *
          * @param min The minimum value.
          * @param max The maximum value.
          **/
@@ -539,14 +594,14 @@ namespace jetassign
         {
             /**
              * Parse the yes/no confirmation from the input.
-             * 
+             *
              * @param input The user's input.
              **/
             bool parse_confirmation(const string &input);
 
             /**
              * Parse the yes/no confirmation from the input.
-             * 
+             *
              * @param input         The user's input.
              * @param default_value The default confirmation.
              **/
@@ -554,35 +609,35 @@ namespace jetassign
 
             /**
              * Parse the menu selection from the input.
-             * 
+             *
              * @param input The user's input.
              **/
             long parse_menu_option(const string &input);
 
             /**
              * Parse the passenger name from the input.
-             * 
+             *
              * @param input The user's input.
              **/
             string parse_passenger_name(const string &input);
 
             /**
              * Parse the passport ID from the input.
-             * 
+             *
              * @param input The user's input.
              **/
             string parse_passport_id(const string &input);
 
             /**
              * Parse the seat location from the input.
-             * 
+             *
              * @param input The user's input.
              **/
             SeatLocation parse_seat_location(const string &input);
 
             /**
              * Parse the passenger name, passport ID, and seat location from the input.
-             * 
+             *
              * @param input The user's input.
              **/
             AssignmentRequest parse_compact_assignment(const string &input);
@@ -644,7 +699,7 @@ namespace jetassign
 
                 /**
                  * Returns the frame and spins the spinner.
-                 * 
+                 *
                  * @param frozen Whether to update the animation.
                  **/
                 char spin(bool frozen = false);
