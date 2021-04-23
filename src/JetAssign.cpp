@@ -12,6 +12,22 @@
  * the License.
  **/
 
+//       _     _________  _________  ________  ____  _____  _________  _____   ___   ____  _____  _
+//      / \   |  _   _  ||  _   _  ||_   __  ||_   \|_   _||  _   _  ||_   _|.'   `.|_   \|_   _|| |
+//     / _ \  |_/ | | \_||_/ | | \_|  | |_ \_|  |   \ | |  |_/ | | \_|  | | /  .-.  \ |   \ | |  | |
+//    / ___ \     | |        | |      |  _| _   | |\ \| |      | |      | | | |   | | | |\ \| |  | |
+//  _/ /   \ \_  _| |_      _| |_    _| |__/ | _| |_\   |_    _| |_    _| |_\  `-'  /_| |_\   |_ |_|
+// |____| |____||_____|    |_____|  |________||_____|\____|  |_____|  |_____|`.___.'|_____|\____|(_)
+//
+// - C++17 IS REQUIRED to compile this source code!
+// - C++17 IS REQUIRED to compile this source code!
+// - C++17 IS REQUIRED to compile this source code!
+//
+// This source code has been checked using continuous integration (CI) pipeline, compiled with MSVC,
+// in a Windows VM. Thus, this source code SHOULD and WILL compile, if not, please confirm the
+// compiler you are using was up-to-date.
+//
+
 #include <algorithm>
 #include <array>
 #include <chrono>
