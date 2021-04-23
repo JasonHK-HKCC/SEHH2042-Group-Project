@@ -735,20 +735,25 @@ void delete_an_assignment()
 
     do
     {
+        cout << SECTION_SEPARATOR
+             << "Remove a particular passenger from the seating plan.\n";
+
         auto passenger = get_passenger();
         if (seating_plan.is_assigned(passenger))
         {
             auto location = seating_plan.location_of(passenger);
-            if (get_confirmation("Are you sure to remove the passenger from the seating plan?", false))
+            if (get_confirmation("\nAre you sure to remove the passenger from the seating plan?", false))
             {
                 seating_plan.remove(*location);
 
-                cout << "Done, the passenger was removed from the seating plan.\n";
+                cout << "Done, the passenger was removed from the seating plan.\n"
+                     << '\n';
             }
         }
         else
         {
-            cout << "No such passenger exist!\n";
+            cout << '\n'
+                 << "No such passenger exist!\n";
         }
     }
     while (get_confirmation("Do you want to remove another passenger?", true));
