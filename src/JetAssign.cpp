@@ -536,6 +536,9 @@ namespace jetassign
     auto seating_plan = core::SeatingPlan();
 }
 
+/**
+ * R0: Main menu
+ **/
 long main_menu();
 
 /**
@@ -563,10 +566,19 @@ void show_latest_seating_plan();
  **/
 long show_details();
 
+/**
+ * R5.1: Show details > Passenger
+ **/
 void show_details_passenger();
 
+/**
+ * R5.1: Show details > Class
+ **/
 void show_details_class();
 
+/**
+ * R6: Exit
+ **/
 void save_and_exit();
 
 #ifndef _TEST
