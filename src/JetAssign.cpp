@@ -920,14 +920,34 @@ void add_an_assignment()
         cout << SECTION_SEPARATOR;
 
         auto passenger = get_passenger();
+        if (seating_plan.is_assigned(passenger))
+        {
+            // Things to do if the passenger was already assigned.
+
+            cout << '\n'
+                 << passenger.name() << "was already assigned to a seat.\n";
+
+            if (!get_confirmation("Would you want to move the passenger to another seat?", true))
+            {
+                // Give up if the operator doesn't want to find a free seat.
+
+                cout << "Canceled, the seating plan was not updated.\n"
+                     << '\n';
+
+                continue;
+            }
+        }
 
         auto location = get_seat_location();
         while (seating_plan.is_occupied(location))
         {
+            // Things to do if the seat was occupied.
+
             cout << "The seat was already taken by another passenger.\n ";
 
             if (!get_confirmation("Would you want to assign the passenger to another seat?", true))
             {
+                // Give up for this assignmnet.
                 break;
             }
 
@@ -936,13 +956,24 @@ void add_an_assignment()
 
         if (seating_plan.is_occupied(location))
         {
-            cout << "Canceled, the seating plan was not updated.\n\n";
+            // Cancel if the seat was occupied.
+
+            cout << "Canceled, the seating plan was not updated.\n"
+                 << '\n';
             continue;
         }
 
-        //assign the seat
+        if (seating_plan.is_assigned(passenger))
+        {
+            // Removes the passenger from the current seat if the passenger was already assigned.
+            seating_plan.remove(passenger);
+        }
+
+        // Assign the passenger to the requested seat.
         seating_plan.assign(location, passenger);
-        cout << "Done, the seating plan was updated.\n\n";
+
+        cout << "Done, the seating plan was updated.\n"
+             << '\n';
     }
     while (get_confirmation("Do you want to assign another passenger?", true));
 }
@@ -1176,9 +1207,11 @@ void add_assignments_in_batch()
             {
                 if (seating_plan.is_assigned(request.passenger()))
                 {
+                    // Removes the passenger from the current seat if the passenger was already assigned.
                     seating_plan.remove(request.passenger());
                 }
 
+                // Assign the passenger to the requested seat.
                 seating_plan.assign(request.location(), request.passenger());
             }
 
@@ -1337,6 +1370,7 @@ void show_details_class()
         size_t starting_row;
         size_t ending_row;
 
+        /** The "ticket class" menu. */
         static const Menu<4> menu =
         {
             "Ticket Class",
@@ -1348,28 +1382,31 @@ void show_details_class()
             }},
         };
 
+        // Prints the main menu and get the user's selection.
         print_menu(menu);
         switch (get_menu_option(menu.options.size()))
         {
-            case 1:
+            case 1: // First class.
                 starting_row = 0;
                 ending_row   = 2;
                 break;
 
-            case 2:
+            case 2: // Business class.
                 starting_row = 2;
                 ending_row   = 7;
                 break;
 
-            case 3:
+            case 3: // Economy class.
                 starting_row = 7;
                 ending_row   = 13;
                 break;
 
             case 4:
+                // Returns to the previous menu.
                 return;
         }
 
+        // Prints the header of the table.
         cout << '\n'
              << "+------+---------------------------------------------------------------------+\n"
              << "| Seat | Passenger Name                                                      |\n"
@@ -1382,15 +1419,19 @@ void show_details_class()
         {
             for (auto column = 0; column < JET_COLUMN_LENGTH; column++)
             {
+                // Prints each row of the table.
+
                 const auto location = SeatLocation(row, column);
 
                 const auto passenger_name = seating_plan.is_occupied(location)
                     ? seating_plan.at(location)->name()
-                    : "vacant";
+                    : "**vacant**";
 
                 cout << "| "
+                        // The "Seat" column.
                      << setw(kLocationColumnWidth) << right << location
                      << " | "
+                        // The "Passenger Name" column.
                      << setw(kPassengerNameColumnWidth) << left << passenger_name
                      << " |\n";
             }
@@ -1427,13 +1468,26 @@ void save_and_exit()
          << "Upload the seating plan to the central database.\n"
          << '\n';
 
+    /**
+     * Executes a fake operation.
+     * 
+     * @param operation The name of the operation.
+     * @param max_step  The maximum progress increase for each step.
+     **/
     const auto execute_operation = [](const string& operation, int max_step)
     {
+        // The randomizer thingy.
         random_device device;
         default_random_engine engine(device());
 
+        // The spinner.
         auto spinner = Spinner();
 
+        /**
+         * Prints the progress animation.
+         * 
+         * @param progress The current progress.
+         **/
         const auto print_progress = [&](size_t progress)
         {
             if (progress > 100) { progress = 100; }
@@ -1448,23 +1502,29 @@ void save_and_exit()
                  << flush;
         };
 
+        /** The current progress. */
         size_t progress = 0;
         print_progress(progress);
 
+        // The other randomizer thingy.
         uniform_int_distribution progress_step(1, max_step);
         uniform_int_distribution progress_freeze(0, 3);
 
         do
         {
+            // Sleep for 100ms.
             this_thread::sleep_for(100ms);
 
+            // Increase the progress if this tick should not be frozen.
             if (!progress_freeze(engine)) { progress += progress_step(engine); }
             print_progress(progress);
         }
         while (progress < 100);
     };
 
+    // Prepare the upload.
     execute_operation("Preparing", 40);
+    // Upload the seating plan.
     execute_operation("Uploading", 15);
 
     cout << '\n'
