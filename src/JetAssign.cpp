@@ -572,6 +572,7 @@ void save_and_exit();
 #ifndef _TEST
 int main(int argc, const char* argv[])
 {
+    /** The welcome message. */
     static const auto welcome_message =
         R"(     _    _            _                    ____             _   _              )" "\n"
         R"(    / \  (_)_ __ _ __ | | __ _ _ __   ___  / ___|  ___  __ _| |_(_)_ __   __ _  )" "\n"
@@ -654,6 +655,7 @@ long main_menu()
 
     cout << SECTION_SEPARATOR;
 
+    /** The main menu. */
     static const Menu<6> menu =
     {
         "Main Menu",
@@ -667,6 +669,7 @@ long main_menu()
         }},
     };
 
+    // Prints the main menu and get the user's selection.
     print_menu(menu);
     return get_menu_option(menu.options.size());
 }
@@ -976,6 +979,7 @@ long show_details()
 
     cout << SECTION_SEPARATOR;
 
+    /** The "show details" menu. */
     static const Menu<3> menu =
     {
         "Details",
@@ -986,6 +990,7 @@ long show_details()
         }},
     };
 
+    // Prints the "show details" menu and get the user's selection.
     print_menu(menu);
     return get_menu_option(menu.options.size());
 }
